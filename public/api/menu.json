@@ -1,0 +1,45 @@
+{
+	"code": "00000",
+      "data": [
+        {
+          "path": "/slope",
+          "component": "Layout",
+          "redirect": "www.bimgle.com",
+          "name": "/slope",
+          "meta": {
+            "title": "边坡监测",
+            "icon": "document",
+            "hidden": false,
+            "alwaysShow": false,
+            "params": null,
+          },
+          "children": [
+            {
+              "path": "picture",
+              "component": "demo/picture",
+              "name": "Picture",
+              "meta": {
+                "title": "实景图片",
+                "icon": "link",
+                "hidden": false,
+                "alwaysShow": false,
+                "params": null,
+              },
+            },
+            {
+              "path": "model",
+              "component": "demo/model",
+              "name": "Model",
+              "meta": {
+                "title": "实景模型",
+                "icon": "link",
+                "hidden": false,
+                "alwaysShow": false,
+                "params": null,
+              },
+            },
+          ],
+        },
+      ],
+      "msg": "一切ok"
+}

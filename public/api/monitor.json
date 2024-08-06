@@ -1,0 +1,251 @@
+{
+	"code": "00000",
+      "data": [
+        {
+          "section_id": 1,
+          "section_name": "清云高速路段",
+          "location": "广东",
+          "slopes": [
+            {
+              "slope_id": 1,
+              "slope_name": "K442",
+              "location": {"lng": 112.84530189035773, "lat": 23.679599360034878},
+              "milepost": "K442",
+              "slope_type": "填方边坡",
+              "slope_hight": 60,
+              "slope_length": 200,
+              "description": "位置：112.845°E 23.679°N",
+              "construction_date": "2015-2-19",
+              "status": "disease",
+              "alerts": []
+            },
+            {
+              "slope_id": 2,
+              "slope_name": "K469",
+              "location": {"lng": 112.67669991732917, "lat": 23.541150959026098},
+              "milepost": "K469",
+              "slope_type": "填方边坡",
+              "slope_hight": 60,
+              "slope_length": 200,
+              "description": "位置：112.676°E 23.541°N",
+              "construction_date": "2015-2-19",
+              "status": "normal",
+              "alerts": []
+            },
+            {
+              "slope_id": 3,
+              "slope_name": "K490",
+              "location": {"lng": 112.54999809638318, "lat": 23.399405789913807},
+              "milepost": "K490",
+              "slope_type": "填方边坡",
+              "slope_hight": 60,
+              "slope_length": 200,
+              "description": "位置：112.549°E 23.399°N",
+              "construction_date": "2015-2-19",
+              "status": "normal",
+              "alerts": []
+            },
+            {
+              "slope_id": 4,
+              "slope_name": "K505",
+              "location": {"lng": 112.44330737056826, "lat": 23.319109746270055},
+              "milepost": "K505",
+              "slope_type": "填方边坡",
+              "slope_hight": 60,
+              "slope_length": 200,
+              "description": "位置：112.443°E 23.319°N",
+              "construction_date": "2015-2-19",
+              "status": "normal",
+              "alerts": []
+            },
+            {
+              "slope_id": 5,
+              "slope_name": "K533",
+              "location": {"lng": 112.2599725808845, "lat": 23.174021966509578},
+              "milepost": "K533",
+              "slope_type": "填方边坡",
+              "slope_hight": 60,
+              "slope_length": 200,
+              "description": "位置：112.259°E 23.175°N",
+              "construction_date": "2015-2-19",
+              "status": "normal",
+              "alerts": [
+                {
+                  "alert_id": 1,
+                  "alert_name": "沉降区域",
+                  "timestamp": "2024-7-6",
+                  "slope_id": 5,
+                  "alert_level": "高",
+                  "alert_prediction": "70%",
+                  "description": "边坡出现沉降",
+                  "status": "未处理",
+                  "disease":{
+                    "detection_id": 1,
+                    "flight_id": 7,
+                    "slope_id": 5,
+                    "discovery_date": "2024-7-1",
+                    "image_url": "./images/5.jpg",
+                    "disease_type": "settle",
+                    "severity": "low",
+                    "location": {"lng": 112.251938092557, "lat": 23.17341576175863, "height": 8},
+                    "description" : "2024-7-15 0.1 \n2024-7-16 0.15 \n2024-7-17 0.2 \n2024-7-18 0.2 \n2024-7-19 0.3",
+                    "assessment": "存在沉降",
+                    "status": "未处理"
+                  }
+                },
+                {
+                  "alert_id": 2,
+                  "alert_name": "土坡裂缝",
+                  "timestamp": "2024-7-6",
+                  "slope_id": 5,
+                  "alert_level": "高",
+                  "alert_prediction": "70%",
+                  "description": "土坡出现裂缝",
+                  "status": "未处理",
+                  "disease":{
+                    "detection_id": 2,
+                    "flight_id": 7,
+                    "slope_id": 5,
+                    "discovery_date": "2024-7-1",
+                    "image_url": "./images/5.jpg",
+                    "disease_type": "crack",
+                    "severity": "low",
+                    "location": {"lng": 112.25249015358472, "lat": 23.17443965113885, "height": 0},
+                    "description" : "裂缝长度(m) 3 \n裂缝宽度(m) 3 \n裂缝深度(m) 0.5",
+                    "assessment": "存在裂缝",
+                    "status": "处理中"
+                  }
+                },
+                {
+                  "alert_id": 3,
+                  "alert_name": "路面裂缝点1",
+                  "timestamp": "2024-7-6",
+                  "slope_id": 5,
+                  "alert_level": "高",
+                  "alert_prediction": "70%",
+                  "description": "路面出现裂缝",
+                  "status": "已处理",
+                  "disease":{
+                    "detection_id": 3,
+                    "flight_id": 7,
+                    "slope_id": 5,
+                    "discovery_date": "2024-7-1",
+                    "image_url": "./images/5.jpg",
+                    "disease_type": "crack",
+                    "severity": "low",
+                    "location": {"lng": 112.25208049296941, "lat": 23.173153817861568, "height": 16},
+                    "description" : "裂缝长度(m) 25.67 \n裂缝宽度(m) 0.08 \n裂缝深度(m) 0.12",
+                    "assessment": "存在裂缝",
+                    "status": "已处理"
+                  }
+                },
+                {
+                  "alert_id": 4,
+                  "alert_name": "路面裂缝点2",
+                  "timestamp": "2024-7-6",
+                  "slope_id": 5,
+                  "alert_level": "高",
+                  "alert_prediction": "70%",
+                  "description": "路面出现裂缝",
+                  "status": "已处理",
+                  "disease":{
+                    "detection_id": 4,
+                    "flight_id": 7,
+                    "slope_id": 5,
+                    "discovery_date": "2024-7-1",
+                    "image_url": "./images/5.jpg",
+                    "disease_type": "crack",
+                    "severity": "low",
+                    "location": {"lng": 112.25277438757017, "lat": 23.173547565597758, "height": 16},
+                    "description" : "裂缝长度(m) 13.82 \n裂缝宽度(m) 0.08 \n裂缝深度(m) 0.16",
+                    "assessment": "存在裂缝",
+                    "status": "已处理"
+                  }
+                }
+              ]
+            },
+            {
+              "slope_id": 6,
+              "slope_name": "K532",
+              "location": {"lng": 112.26202071744656, "lat": 23.1750103541934},
+              "milepost": "K532",
+              "slope_type": "填方边坡",
+              "slope_hight": 60,
+              "slope_length": 200,
+              "description": "位置：112.262°E 23.175°N",
+              "construction_date": "2015-2-19",
+              "status": "normal",
+              "alerts": []
+            }
+          ]
+        },
+        {
+          "section_id": 2,
+          "section_name": "汕湛高速路段",
+          "location": "广东",
+          "slopes": [
+            {
+              "slope_id": 8,
+              "slope_name": "K123",
+              "location": {"lng": 111.10823, "lat": 21.82166},
+              "milepost": "K123",
+              "slope_type": "填方边坡",
+              "slope_hight": 10,
+              "slope_length": 300,
+              "description": "位置：111.108°E 21.821°N",
+              "construction_date": "2015-2-19",
+              "status": "normal",
+              "alerts": [
+                {
+                  "alert_id": 1,
+                  "alert_name": "边坡预警1",
+                  "timestamp": "2024-7-6",
+                  "slope_id": 1,
+                  "alert_level": "高",
+                  "alert_prediction": "70%",
+                  "description": "路面出现裂缝",
+                  "status": "未处理",
+                  "disease":{
+                    "detection_id": 1,
+                    "flight_id": 7,
+                    "slope_id": 1,
+                    "discovery_date": "2024-7-1",
+                    "image_url": "./images/5.jpg",
+                    "disease_type": "裂缝",
+                    "severity": "low",
+                    "location": {"lng": 111.098330878, "lat": 21.819097437, "height": 145},
+                    "description" : "倾角最小值(°) 0.1 \n倾角最大值(°) 0.5 \n最大变化率(°/d) 1.34 \n累计裂缝最小值(mm) 86 \n累计裂缝最大值(mm) 147",
+                    "assessment": "存在裂缝",
+                    "status": "处理中"
+                  }
+                },
+                {
+                  "alert_id": 2,
+                  "alert_name": "边坡预警2",
+                  "timestamp": "2024-7-6",
+                  "slope_id": 1,
+                  "alert_level": "高",
+                  "alert_prediction": "70%",
+                  "description": "边坡出现沉降",
+                  "status": "未处理",
+                  "disease":{
+                    "detection_id": 2,
+                    "flight_id": 7,
+                    "slope_id": 1,
+                    "discovery_date": "2024-7-1",
+                    "image_url": "./images/5.jpg",
+                    "disease_type": "沉降",
+                    "severity": "low",
+                    "location": {"lng": 111.098430878, "lat": 21.820157437, "height": 135},
+                    "description" : "倾角最小值(°) 0.1 \n倾角最大值(°) 0.5 \n最大变化率(°/d) 1.34 \n累计沉降最小值(mm) 86 \n累计沉降最大值(mm) 147",
+                    "assessment": "存在沉降",
+                    "status": "未处理"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "msg": "一切ok"
+}
