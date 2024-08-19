@@ -2,26 +2,38 @@
   <div class="app-container">
     <div id="slope-viewer" class="slope-viewer">
       <vc-config-provider :cesium-path="cesiumPath" :access-token="accesstToken">
-        <vc-viewer ref="viewerRef" :info-box="false" :fullscreen-button="true" fullscreen-element="document.body"
-          @ready="onViewerReady">
+        <vc-viewer ref="viewerRef" :info-box="false" :fullscreen-button="true" :navigationHelpButton="true"
+          fullscreen-element="document.body" :showCredit="false" :selectionIndicator="true" @ready="onViewerReady">
           <vc-terrain-provider-cesium ref="provider"></vc-terrain-provider-cesium>
           <vc-layer-imagery>
             <vc-imagery-provider-bing
               bm-key="AmGu3cvB_g1HbkQErEyvmLc9j0YIGWS7IdOqR7-hQbO8J92Fzrzkhy_bYKSsyoEx"></vc-imagery-provider-bing>
           </vc-layer-imagery>
 
+          <!-- 地面模型 -->
+          <vc-primitive-tileset ref="groundTileset" :assetId="2670980" :show="!modelState"
+            :maximumScreenSpaceError="128">
+          </vc-primitive-tileset>
+
+          <!-- 倾斜模型 -->
+          <vc-primitive-tileset ref="slopeTileset" :url="'./' + g_slope + '/terra/tileset.json'" :show="modelState"
+            @ready="onSlopeTilesetReady" :maximumScreenSpaceError="2">
+          </vc-primitive-tileset>
+
+          <!-- 预警实体 -->
           <div v-for="alert in alertInfo">
             <vc-entity :id="alert.alert_id.toString()" :name="alert.alert_name" :show="alertState"
               @dblclick="pickEntityAlertEvt" @mouseover="onEntityAlertEvt" @mouseout="onEntityAlertEvt">
               <vc-graphics-polygon :hierarchy="alert.disease.area" :material="[255, 255, 0, 125]" :extrudedHeight="0"
                 :perPositionHeight="true" :outline="true" outlineColor="black"></vc-graphics-polygon>
             </vc-entity>
+            <!-- 灾害标记实体 -->
             <div v-for="(mark, index) in alert.disease.marks">
               <vc-entity :position="mark" :id="alert.alert_id.toString() + '|' + index" :name="alert.alert_name"
                 :show="alertState" @click="pickEntityMarkEvt" @mouseover="onEntityMarkEvt" @mouseout="onEntityMarkEvt">
-                <vc-graphics-billboard ref="billboard" :image="image" :scale="scale" :show="show"
-                  :distance-display-condition="distanceDisplayCondition"
-                  :horizontal-origin="horizontalOrigin"></vc-graphics-billboard>
+                <vc-graphics-billboard :image="image" :scale="scale"
+                  :distance-display-condition="distanceDisplayCondition" :horizontal-origin="0"
+                  :verticalOrigin="1"></vc-graphics-billboard>
               </vc-entity>
             </div>
           </div>
@@ -35,9 +47,9 @@
             </vc-entity>
             <div v-for="mark in newAlertForm.disease.area">
               <vc-entity :position="mark">
-                <vc-graphics-billboard ref="billboard" :image="image" :scale="scale" :show="show" color="blue"
-                  :distance-display-condition="distanceDisplayCondition"
-                  :horizontal-origin="horizontalOrigin"></vc-graphics-billboard>
+                <vc-graphics-billboard :image="image" :scale="scale" color="blue"
+                  :distance-display-condition="distanceDisplayCondition" :verticalOrigin="1"
+                  :horizontal-origin="0"></vc-graphics-billboard>
               </vc-entity>
             </div>
           </div>
@@ -45,29 +57,36 @@
       </vc-config-provider>
 
       <!-- 工具栏 -->
-      <el-row class="viewer-toolbar" :gutter="20" justify="center">
-        <el-col :span="12">
-          <span>模型 </span>
-          <el-switch v-model="modelState" style="
-              --el-switch-on-color: #13ce66;
-              --el-switch-off-color: #ff4949;
-            " @change="switchModel" />
-        </el-col>
-
-        <el-col :span="12">
-          <span>预警 </span>
-          <el-switch v-model="alertState" style="
-              --el-switch-on-color: #13ce66;
-              --el-switch-off-color: #ff4949;
-            " />
-        </el-col>
-      </el-row>
+      <el-space class="viewer-toolbar" :size="8" direction="vertical" alignment="flex-start">
+        <el-space :size="12" direction="horizontal">
+          <div>
+            <el-button type="danger" round @click="viewerRef.reload()">重载</el-button>
+          </div>
+          <div>
+            <span>模型 </span>
+            <el-switch v-model="modelState" style="--el-switch-on-color: #13ce66;--el-switch-off-color: #ff4949;" />
+          </div>
+          <div>
+            <span>预警 </span>
+            <el-switch v-model="alertState" style="--el-switch-on-color: #13ce66;--el-switch-off-color: #ff4949;" />
+          </div>
+        </el-space>
+      </el-space>
 
       <!-- 当前滑坡信息 -->
       <div class="slope-info">
         <ul>
-          <li v-for="item in slopeInfo">
-            <span>{{ item }}</span>
+          <li>
+            <span>监测地点：{{ slopeInfo.slope_name }}</span>
+          </li>
+          <li>
+            <span>{{ slopeInfo.description }}</span>
+          </li>
+          <li>
+            <span>监测内容：{{ slopeInfo.slope_type }}</span>
+          </li>
+          <li>
+            <span>预警数量：{{ slopeInfo.alert_length }}</span>
           </li>
         </ul>
       </div>
@@ -256,23 +275,28 @@ const cesiumPath = import.meta.env.VITE_VUE_CESIUMJS_PATH;
 const accesstToken =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiZGNiNGNkOC0zZWE1LTQwOGItYmQ3OS01OWMyNzcyYjNkNmUiLCJpZCI6MjI5NTM5LCJpYXQiOjE3MjE0NDI0MDJ9.GJE4ov7XP4jLXGP7oty3NELqaFp7mEbTZzvkgYPkhCc";
 const image = "./images/mark.png";
-const viewerRef = ref<HTMLElement>(null);
+const viewerRef = ref(null);
 const distanceDisplayCondition = { near: 0, far: 20000000 };
-const horizontalOrigin = 0;
 
 var g_Cesium = null;
 var g_viewer = null;
 var g_slope = null;
-var groundTileset = null;
-var slopeTileset = null;
+var groundTileset = ref(null);
+var slopeTileset = ref(null);
 var imageList = [];
-const scale = ref(1);
-const show = ref(true);
-const entity = ref(null);
-const billboard = ref(null);
+const scale = ref(1.25);
 const modelState = ref(true);
 const alertState = ref(true);
-const slopeInfo = ref<string>([]);
+const slopeInfo = ref({
+  slope_name: "",
+  location: {
+    lng: 0,
+    lat: 0
+  },
+  description: "",
+  slope_type: "",
+  alert_length: 0
+});
 const alertInfo = ref([]);
 const currentAlert = ref({});
 const currentDisease = ref(null);
@@ -327,12 +351,12 @@ onMounted(() => {
           section.slopes.forEach((slope) => {
             if (slope.slope_id == slopeId.value) {
               g_slope = slope.milepost;
-              slopeInfo.value.push(
-                "监测地点：" + section.section_name + slope.milepost
-              );
-              slopeInfo.value.push(slope.description);
-              slopeInfo.value.push("监测内容：" + slope.slope_type);
-              slopeInfo.value.push("预警数量：" + slope.alerts.length);
+              slopeInfo.value.slope_name = section.section_name + slope.milepost;
+              slopeInfo.value.location = slope.location;
+              slopeInfo.value.slope_type = slope.slope_type;
+              slopeInfo.value.alert_length = slope.alerts.length;
+              slopeInfo.value.description = slope.description;
+
               alertInfo.value = slope.alerts;
               //console.log(alertInfo.value)
 
@@ -344,6 +368,12 @@ onMounted(() => {
                 })
                 .catch((error) => {
                   console.error("Error fetching JSON data:", error);
+                  ElNotification({
+                    title: 'Error',
+                    message: '图片加载失败',
+                    type: 'error',
+                    offset: 50,
+                  });
                 });
             }
           });
@@ -436,16 +466,16 @@ const onEntityAlertEvt = (e) => {
 
 const onEntityMarkEvt = (e) => {
   if (e.type === "onmouseover") {
-    scale.value = 1.25;
+    scale.value = 1.5;
   } else if (e.type === "onmouseout") {
-    scale.value = 1;
+    scale.value = 1.25;
   }
 };
 
-const switchModel = () => {
-  groundTileset.show = !modelState.value;
-  slopeTileset.show = modelState.value;
-};
+// const switchModel = () => {
+//   groundTileset.show = !modelState.value;
+//   slopeTileset.show = modelState.value;
+// };
 
 const showImages = () => {
   var imagesList = [];
@@ -466,7 +496,7 @@ const setAlertPolygon = () => {
   newAlertForm.value.disease.area.push([
     currentPos.lng,
     currentPos.lat,
-    currentPos.height + 0.25,
+    currentPos.height + 0.1,
   ]);
 };
 
@@ -476,7 +506,6 @@ const reSetAlertPolygon = () => {
 
 const newMark = () => {
   if (currentAlert.value.disease) {
-    currentPos.height += 0.5;
     currentAlert.value.disease.marks.push({
       lng: currentPos.lng,
       lat: currentPos.lat,
@@ -510,7 +539,7 @@ const newAlert = () => {
     timestamp: Date.now(),
     slope_id: 5,
     alert_level: "低",
-    alert_prediction: "",
+    alert_prediction: "70%",
     location: currentPos,
     description: "",
     status: "未处理",
@@ -518,15 +547,15 @@ const newAlert = () => {
       detection_id: Date.now(),
       flight_id: 7,
       slope_id: 5,
-      discovery_date: "2024-8-16",
+      discovery_date: Date.now(),
       image_url: [],
       disease_type: "crack",
       severity: "low",
       area: newAlertForm.value.disease.area,
       marks: [],
       description: "裂缝长度(m) 3 \n裂缝宽度(m) 3 \n裂缝深度(m) 0.5",
-      assessment: "xxxx",
-      status: "xxx",
+      assessment: "",
+      status: "未处理",
     },
   };
   alertInfo.value.push(al);
@@ -556,41 +585,55 @@ const hideMenu = () => {
   showMenu.value = false;
 };
 
+
 const onViewerReady = async ({ Cesium, viewer }) => {
   console.log(Cesium.VERSION);
   g_Cesium = Cesium;
   g_viewer = viewer;
 
   // 设置拖拽方式：
-  viewer._cesiumWidget._creditContainer.style.display = "none";
   // viewer.scene.screenSpaceCameraController.tiltEventTypes = [Cesium.CameraEventType.LEFT_DRAG];
   // viewer.scene.screenSpaceCameraController.zoomEventTypes = [Cesium.CameraEventType.MIDDLE_DRAG, Cesium.CameraEventType.WHEEL, Cesium.CameraEventType.PINCH];
   // viewer.scene.screenSpaceCameraController.rotateEventTypes = [Cesium.CameraEventType.RIGHT_DRAG];
 
-  viewer.scene.primitives.removeAll();
+  // viewer.scene.primitives.removeAll();
 
-  groundTileset = await Cesium.Cesium3DTileset.fromIonAssetId(2670980);
-  viewer.scene.primitives.add(groundTileset);
-  groundTileset.show = !modelState.value;
+  //加载地面模型数据
+  // groundTileset = await Cesium.Cesium3DTileset.fromIonAssetId(2670980);
+  // viewer.scene.primitives.add(groundTileset);
+  // groundTileset.show = !modelState.value;
 
   //加载倾斜模型数据
-  var url = "./" + g_slope + "/terra/tileset.json";
-  slopeTileset = await Cesium.Cesium3DTileset.fromUrl(url, {
-    //控制切片视角显示的数量，可调整性能
-    maximumScreenSpaceError: 2,
-    maximumNumberOfLoadedTiles: 100000,
-  });
-  viewer.scene.primitives.add(slopeTileset);
-  //slopeTileset.show = false;
+  // var url = "./" + g_slope + "/terra/tileset.json";
+  // slopeTileset = await Cesium.Cesium3DTileset.fromUrl(url, {
+  //   //控制切片视角显示的数量，可调整性能
+  //   maximumScreenSpaceError: 2,
+  //   maximumNumberOfLoadedTiles: 100000,
+  // });
+  // viewer.scene.primitives.add(slopeTileset);
+  // slopeTileset.show = false;
   //控制模型的位置
 
-  //获取3Dtlies的bounds范围
-  var boundingSphere = slopeTileset.boundingSphere;
-  viewer.camera.viewBoundingSphere(
-    boundingSphere,
-    new Cesium.HeadingPitchRange(0.0, -0.5, boundingSphere.radius * 1.5)
-  );
-  viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+  //获取3Dtlies的bounds范围，然后移动相机
+  // var boundingSphere = slopeTileset.boundingSphere;
+  // viewer.camera.viewBoundingSphere(
+  //   boundingSphere,
+  //   new Cesium.HeadingPitchRange(0.0, -0.5, boundingSphere.radius * 1.5)
+  // );
+  // viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+
+
+  // 获取加载请求对象，处理滑坡模型加载失败的情况
+  slopeTileset.value.creatingPromise.catch((err) => {
+    ElNotification({
+      title: 'Error',
+      message: '模型加载失败',
+      type: 'error',
+      offset: 50,
+    });
+  })
+
+
 
   viewer.screenSpaceEventHandler.setInputAction(function onRightClick(
     movement
@@ -625,6 +668,17 @@ const onViewerReady = async ({ Cesium, viewer }) => {
   });
   document.addEventListener("click", hideMenu);
 };
+
+const onSlopeTilesetReady = ({ cesiumObject: tileset, viewer }) => {
+  // 获取3Dtlies的bounds范围，然后移动相机至模型
+  var boundingSphere = tileset.boundingSphere;
+  viewer.camera.viewBoundingSphere(
+    boundingSphere,
+    g_Cesium.HeadingPitchRange(0.0, -0.5, boundingSphere.radius * 1.5)
+  );
+  viewer.camera.lookAtTransform(g_Cesium.Matrix4.IDENTITY);
+}
+
 </script>
 
 <style lang="scss" scoped>
