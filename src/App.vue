@@ -1,13 +1,8 @@
 <template>
   <el-config-provider :locale="locale" :size="size">
     <!-- 开启水印 -->
-    <el-watermark
-      v-if="watermarkEnabled"
-      :font="{ color: fontColor }"
-      :content="defaultSettings.watermarkContent"
-      :z-index="9999"
-      class="wh-full"
-    >
+    <el-watermark v-if="watermarkEnabled" :font="{ color: fontColor }" :content="defaultSettings.watermarkContent"
+      :z-index="9999" class="wh-full">
       <router-view />
     </el-watermark>
     <!-- 关闭水印 -->
@@ -35,3 +30,14 @@ const fontColor = computed(() => {
     : "rgba(0, 0, 0, .15)";
 });
 </script>
+
+<style lang="scss">
+.dialog_class {
+  // 使得在对话框的遮罩层下能够点击内容
+  pointer-events: none;
+}
+
+.el-dialog {
+  pointer-events: auto;
+}
+</style>

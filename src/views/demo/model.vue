@@ -107,7 +107,7 @@
 
       <!-- 选中的预警信息 -->
       <el-dialog v-model="showAlertDialog" style="position: absolute; right: 20px" top="70px"
-        :title="currentAlert.alert_name" width="500" :draggable="true" :modal="false">
+        :close-on-click-modal="true" :title="currentAlert.alert_name" width="500" :draggable="true" :modal="false">
 
         <el-form :model="currentAlert" label-position="left" label-width="auto">
           <el-form-item label="病害编码:">
@@ -153,7 +153,8 @@
 
       <!-- 选中的灾害点的信息 -->
       <el-dialog v-model="showDiseaseDialog" style="position: absolute; right: 20px" top="70px"
-        :title="'病害点:' + markIndex" width="500" :draggable="true" :modal="false" @open="diseaseDialogOpen()">
+        :close-on-click-modal="true" :title="'病害点:' + markIndex" width="500" :draggable="true" :modal="false"
+        @open="diseaseDialogOpen()">
         <div>
           <el-row style="margin-bottom: 16px;">
             <el-col :span="4">
@@ -343,7 +344,7 @@ const newAlertForm = ref({
 });
 
 onMounted(() => {
-  //console.log('onMounted')
+  // console.log(sectionId.value, slopeId.value);
   MonitorAPI.getMonitorData()
     .then((data) => {
       data.forEach((section) => {
@@ -460,7 +461,6 @@ const onEntityAlertEvt = (e) => {
     }
   } else if (e.type === "onmouseout") {
     showPopup.value = false;
-    currentAlert.value = {};
   }
 };
 
@@ -587,7 +587,7 @@ const hideMenu = () => {
 
 
 const onViewerReady = async ({ Cesium, viewer }) => {
-  console.log(Cesium.VERSION);
+  console.log("Cesium Version:", Cesium.VERSION);
   g_Cesium = Cesium;
   g_viewer = viewer;
 
