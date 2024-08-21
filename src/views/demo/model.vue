@@ -1,39 +1,81 @@
 <template>
   <div class="app-container">
     <div id="slope-viewer" class="slope-viewer">
-      <vc-config-provider :cesium-path="cesiumPath" :access-token="accesstToken">
-        <vc-viewer ref="viewerRef" :info-box="false" :fullscreen-button="true" :navigationHelpButton="true"
-          fullscreen-element="document.body" :showCredit="false" :selectionIndicator="true" @ready="onViewerReady">
-          <vc-terrain-provider-cesium ref="provider"></vc-terrain-provider-cesium>
+      <vc-config-provider
+        :cesium-path="cesiumPath"
+        :access-token="accesstToken"
+      >
+        <vc-viewer
+          ref="viewerRef"
+          :info-box="false"
+          :fullscreen-button="true"
+          :navigationHelpButton="true"
+          fullscreen-element="document.body"
+          :showCredit="false"
+          :selectionIndicator="true"
+          @ready="onViewerReady"
+        >
+          <vc-terrain-provider-cesium ref="provider" />
           <vc-layer-imagery>
             <vc-imagery-provider-bing
-              bm-key="AmGu3cvB_g1HbkQErEyvmLc9j0YIGWS7IdOqR7-hQbO8J92Fzrzkhy_bYKSsyoEx"></vc-imagery-provider-bing>
+              bm-key="AmGu3cvB_g1HbkQErEyvmLc9j0YIGWS7IdOqR7-hQbO8J92Fzrzkhy_bYKSsyoEx"
+            />
           </vc-layer-imagery>
 
           <!-- 地面模型 -->
-          <vc-primitive-tileset ref="groundTileset" :assetId="2670980" :show="!modelState"
-            :maximumScreenSpaceError="128">
-          </vc-primitive-tileset>
+          <vc-primitive-tileset
+            ref="groundTileset"
+            :assetId="2670980"
+            :show="!modelState"
+            :maximumScreenSpaceError="128"
+          />
 
           <!-- 倾斜模型 -->
-          <vc-primitive-tileset ref="slopeTileset" :url="'./' + g_slope + '/terra/tileset.json'" :show="modelState"
-            @ready="onSlopeTilesetReady" :maximumScreenSpaceError="2">
-          </vc-primitive-tileset>
+          <vc-primitive-tileset
+            ref="slopeTileset"
+            :url="'./' + g_slope + '/terra/tileset.json'"
+            :show="modelState"
+            @ready="onSlopeTilesetReady"
+            :maximumScreenSpaceError="2"
+          />
 
           <!-- 预警实体 -->
-          <div v-for="alert in alertInfo">
-            <vc-entity :id="alert.alert_id.toString()" :name="alert.alert_name" :show="alertState"
-              @dblclick="pickEntityAlertEvt" @mouseover="onEntityAlertEvt" @mouseout="onEntityAlertEvt">
-              <vc-graphics-polygon :hierarchy="alert.disease.area" :material="[255, 255, 0, 125]" :extrudedHeight="0"
-                :perPositionHeight="true" :outline="true" outlineColor="black"></vc-graphics-polygon>
+          <div v-for="alert in alertInfo" :key="alert.alert_id">
+            <vc-entity
+              :id="alert.alert_id.toString()"
+              :name="alert.alert_name"
+              :show="alertState"
+              @dblclick="pickEntityAlertEvt"
+              @mouseover="onEntityAlertEvt"
+              @mouseout="onEntityAlertEvt"
+            >
+              <vc-graphics-polygon
+                :hierarchy="alert.disease.area"
+                :material="[255, 255, 0, 125]"
+                :extrudedHeight="0"
+                :perPositionHeight="true"
+                :outline="true"
+                outlineColor="black"
+              />
             </vc-entity>
             <!-- 灾害标记实体 -->
-            <div v-for="(mark, index) in alert.disease.marks">
-              <vc-entity :position="mark" :id="alert.alert_id.toString() + '|' + index" :name="alert.alert_name"
-                :show="alertState" @click="pickEntityMarkEvt" @mouseover="onEntityMarkEvt" @mouseout="onEntityMarkEvt">
-                <vc-graphics-billboard :image="image" :scale="scale"
-                  :distance-display-condition="distanceDisplayCondition" :horizontal-origin="0"
-                  :verticalOrigin="1"></vc-graphics-billboard>
+            <div v-for="(mark, index) in alert.disease.marks" :key="index">
+              <vc-entity
+                :position="mark"
+                :id="alert.alert_id.toString() + '|' + index"
+                :name="alert.alert_name"
+                :show="alertState"
+                @click="pickEntityMarkEvt"
+                @mouseover="onEntityMarkEvt"
+                @mouseout="onEntityMarkEvt"
+              >
+                <vc-graphics-billboard
+                  :image="image"
+                  :scale="scale"
+                  :distance-display-condition="distanceDisplayCondition"
+                  :horizontal-origin="0"
+                  :verticalOrigin="1"
+                />
               </vc-entity>
             </div>
           </div>
@@ -41,15 +83,28 @@
           <!-- 划定要新增的预警区域 -->
           <div>
             <vc-entity>
-              <vc-graphics-polygon :hierarchy="newAlertForm.disease.area" :material="[0, 255, 255, 125]"
-                :extrudedHeight="0" :perPositionHeight="true" :outline="true"
-                outlineColor="black"></vc-graphics-polygon>
+              <vc-graphics-polygon
+                :hierarchy="newAlertForm.disease.area"
+                :material="[0, 255, 255, 125]"
+                :extrudedHeight="0"
+                :perPositionHeight="true"
+                :outline="true"
+                outlineColor="black"
+              />
             </vc-entity>
-            <div v-for="mark in newAlertForm.disease.area">
+            <div
+              v-for="(mark, index) in newAlertForm.disease.area"
+              :key="index"
+            >
               <vc-entity :position="mark">
-                <vc-graphics-billboard :image="image" :scale="scale" color="blue"
-                  :distance-display-condition="distanceDisplayCondition" :verticalOrigin="1"
-                  :horizontal-origin="0"></vc-graphics-billboard>
+                <vc-graphics-billboard
+                  :image="image"
+                  :scale="scale"
+                  color="blue"
+                  :distance-display-condition="distanceDisplayCondition"
+                  :verticalOrigin="1"
+                  :horizontal-origin="0"
+                />
               </vc-entity>
             </div>
           </div>
@@ -57,18 +112,44 @@
       </vc-config-provider>
 
       <!-- 工具栏 -->
-      <el-space class="viewer-toolbar" :size="8" direction="vertical" alignment="flex-start">
+      <el-space
+        class="viewer-toolbar"
+        :size="8"
+        direction="vertical"
+        alignment="flex-start"
+      >
         <el-space :size="12" direction="horizontal">
           <div>
-            <el-button type="danger" round @click="viewerRef.reload()">重载</el-button>
+            <el-button type="danger" round @click="viewerRef.reload()"
+              >重载</el-button
+            >
+          </div>
+          <div>
+            <el-button type="danger" round @click="showImageDrawer = true"
+              >图片</el-button
+            >
           </div>
           <div>
             <span>模型 </span>
-            <el-switch v-model="modelState" style="--el-switch-on-color: #13ce66;--el-switch-off-color: #ff4949;" />
+            <el-switch
+              v-model="modelState"
+              style="
+
+                --el-switch-on-color: #13ce66;
+                --el-switch-off-color: #ff4949;
+              "
+            />
           </div>
           <div>
             <span>预警 </span>
-            <el-switch v-model="alertState" style="--el-switch-on-color: #13ce66;--el-switch-off-color: #ff4949;" />
+            <el-switch
+              v-model="alertState"
+              style="
+
+                --el-switch-on-color: #13ce66;
+                --el-switch-off-color: #ff4949;
+              "
+            />
           </div>
         </el-space>
       </el-space>
@@ -106,35 +187,62 @@
       </div>
 
       <!-- 选中的预警信息 -->
-      <el-dialog v-model="showAlertDialog" style="position: absolute; right: 20px" top="70px"
-        :close-on-click-modal="true" :title="currentAlert.alert_name" width="500" :draggable="true" :modal="false">
-
+      <el-dialog
+        v-model="showAlertDialog"
+        style="position: absolute; right: 20px"
+        top="70px"
+        :close-on-click-modal="true"
+        :title="currentAlert.alert_name"
+        width="500"
+        :draggable="true"
+        :modal="false"
+      >
         <el-form :model="currentAlert" label-position="left" label-width="auto">
           <el-form-item label="病害编码:">
-            <el-input v-model="currentAlert.alert_id" :readonly="true" :disabled="true" />
+            <el-input
+              v-model="currentAlert.alert_id"
+              :readonly="true"
+              :disabled="true"
+            />
           </el-form-item>
           <el-form-item label="病害名称:" placeholder="请输入病害名称">
             <el-input v-model="currentAlert.alert_name" />
           </el-form-item>
           <el-form-item label="预警时间:">
-            <el-date-picker v-model="currentAlert.timestamp" type="date" placeholder="请选择预警时间" :readonly="true"
-              :disabled="true" :clearable="false" />
+            <el-date-picker
+              v-model="currentAlert.timestamp"
+              type="date"
+              placeholder="请选择预警时间"
+              :readonly="true"
+              :disabled="true"
+              :clearable="false"
+            />
           </el-form-item>
           <el-form-item label="预警等级:">
-            <el-select v-model="currentAlert.alert_level" placeholder="请选择预警等级">
+            <el-select
+              v-model="currentAlert.alert_level"
+              placeholder="请选择预警等级"
+            >
               <el-option label="低" value="低" />
               <el-option label="中" value="中" />
               <el-option label="高" value="高" />
             </el-select>
           </el-form-item>
           <el-form-item label="预警预测:">
-            <el-input v-model="currentAlert.alert_prediction" :readonly="true" :disabled="true" />
+            <el-input
+              v-model="currentAlert.alert_prediction"
+              :readonly="true"
+              :disabled="true"
+            />
           </el-form-item>
           <el-form-item label="预警描述:" placeholder="请输入预警描述">
             <el-input v-model="currentAlert.description" />
           </el-form-item>
           <el-form-item label="预警状态:">
-            <el-select v-model="currentAlert.status" placeholder="请选择预警状态">
+            <el-select
+              v-model="currentAlert.status"
+              placeholder="请选择预警状态"
+            >
               <el-option label="未处理" value="未处理" />
               <el-option label="处理中" value="处理中" />
               <el-option label="已处理" value="已处理" />
@@ -144,19 +252,25 @@
         <template #footer>
           <div class="dialog-footer">
             <el-button type="primary" @click="changeAlert()">变更</el-button>
-            <el-button type="danger" @click="deleteAlert()">
-              删除
-            </el-button>
+            <el-button type="danger" @click="deleteAlert()"> 删除 </el-button>
           </div>
         </template>
       </el-dialog>
 
       <!-- 选中的灾害点的信息 -->
-      <el-dialog v-model="showDiseaseDialog" style="position: absolute; right: 20px" top="70px"
-        :close-on-click-modal="true" :title="'病害点:' + markIndex" width="500" :draggable="true" :modal="false"
-        @open="diseaseDialogOpen()">
+      <el-dialog
+        v-model="showDiseaseDialog"
+        style="position: absolute; right: 20px"
+        top="70px"
+        :close-on-click-modal="true"
+        :title="'病害点:' + markIndex"
+        width="500"
+        :draggable="true"
+        :modal="false"
+        @open="diseaseDialogOpen()"
+      >
         <div>
-          <el-row style="margin-bottom: 16px;">
+          <el-row style="margin-bottom: 16px">
             <el-col :span="4">
               <div>位置：</div>
             </el-col>
@@ -166,7 +280,7 @@
               <div>高度:{{ currentDisease?.marks[markIndex]?.height }}</div>
             </el-col>
           </el-row>
-          <el-row style="margin-bottom: 16px;">
+          <el-row style="margin-bottom: 16px">
             <el-col :span="4">
               <div>参数：</div>
             </el-col>
@@ -175,13 +289,13 @@
                 <div id="settle" style="width: 350px; height: 200px"></div>
               </div>
               <div v-if="currentDisease?.disease_type == 'crack'">
-                <div v-for="param in params">
+                <div v-for="(param, index) in params" :key="index">
                   <div>{{ param }}</div>
                 </div>
               </div>
             </el-col>
           </el-row>
-          <el-row style="margin-bottom: 16px;">
+          <el-row style="margin-bottom: 16px">
             <el-col :span="4">
               <div>病害：</div>
             </el-col>
@@ -189,26 +303,35 @@
               <el-input v-model="currentDisease.assessment" />
             </el-col>
           </el-row>
-          <el-row style="margin-bottom: 16px;">
+          <el-row style="margin-bottom: 16px">
             <el-col :span="4">
               <div>状态：</div>
             </el-col>
             <el-col :span="20">
-              <el-select v-model="currentDisease.status" placeholder="请选择状态">
+              <el-select
+                v-model="currentDisease.status"
+                placeholder="请选择状态"
+              >
                 <el-option label="未处理" value="未处理" />
                 <el-option label="处理中" value="处理中" />
                 <el-option label="已处理" value="已处理" />
               </el-select>
             </el-col>
           </el-row>
-          <el-row style="margin-bottom: 16px;">
+          <el-row style="margin-bottom: 16px">
             <el-col :span="4">
               <div>图片：</div>
             </el-col>
             <el-col :span="20">
-              <el-image style="width: 100px; height: 100px" :src="currentDisease?.image_url[0]" :zoom-rate="1.2"
-                :preview-src-list="[].concat(currentDisease?.image_url)" :initial-index="0" fit="contain"
-                hide-on-click-modal />
+              <el-image
+                style="width: 100px; height: 100px"
+                :src="currentDisease?.image_url[0]"
+                :zoom-rate="1.2"
+                :preview-src-list="[].concat(currentDisease?.image_url)"
+                :initial-index="0"
+                fit="contain"
+                hide-on-click-modal
+              />
             </el-col>
           </el-row>
         </div>
@@ -216,38 +339,91 @@
         <template #footer>
           <div class="dialog-footer">
             <el-button type="primary" @click="changeMark()">变更</el-button>
-            <el-button type="danger" @click="deleteMark()">
-              删除
-            </el-button>
+            <el-button type="danger" @click="deleteMark()"> 删除 </el-button>
           </div>
         </template>
       </el-dialog>
 
+      <!-- 图片列表 -->
+      <el-drawer v-model="showImageDrawer">
+        <template #header>
+          <h4>图片列表</h4>
+        </template>
+        <template #default>
+          <el-button type="primary" style="margin-bottom: 16px"
+            >开始扫描</el-button
+          >
+          <el-scrollbar>
+            <el-image
+              v-for="(image, index) in imageList"
+              :key="index"
+              style="width: 100%"
+              :src="'./' + g_slope + '/survey/' + image.id + '.JPG'"
+              fit="fill"
+              :lazy="true"
+            />
+          </el-scrollbar>
+        </template>
+        <template #footer>
+          <div style="flex: auto">
+            <!-- <el-button @click="cancelClick">cancel</el-button>
+            <el-button type="primary" @click="confirmClick">confirm</el-button> -->
+          </div>
+        </template>
+      </el-drawer>
+
       <!-- 右键菜单 -->
-      <div v-show="showMenu" :style="{ left: menuX + 'px', top: menuY + 'px' }" style="
+      <div
+        v-show="showMenu"
+        :style="{ left: menuX + 'px', top: menuY + 'px' }"
+        style="
           position: absolute;
-          background-color: rgba(255, 255, 255, 0.7);
+          background-color: rgb(255 255 255 / 70%);
           border: 1px solid #ccc;
           border-radius: 5px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        ">
-        <ul style="list-style-type: none; padding: 0">
+          box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
+        "
+      >
+        <ul style=" padding: 0;list-style-type: none">
           <li style="padding: 5px">
-            <a href="javascript:void(0);" style="text-decoration: none; color: #333" @click="showImages()">查看图片</a>
+            <a
+              href="javascript:void(0);"
+              style=" color: #333;text-decoration: none"
+              @click="showImages()"
+              >查看图片</a
+            >
           </li>
           <li style="padding: 5px">
-            <a href="javascript:void(0);" style="text-decoration: none; color: #333"
-              @click="setAlertPolygon()">标定预警区域</a>
+            <a
+              href="javascript:void(0);"
+              style=" color: #333;text-decoration: none"
+              @click="setAlertPolygon()"
+              >标定预警区域</a
+            >
           </li>
           <li style="padding: 5px">
-            <a href="javascript:void(0);" style="text-decoration: none; color: #333"
-              @click="reSetAlertPolygon()">重置预警区域</a>
+            <a
+              href="javascript:void(0);"
+              style=" color: #333;text-decoration: none"
+              @click="reSetAlertPolygon()"
+              >重置预警区域</a
+            >
           </li>
           <li style="padding: 5px">
-            <a href="javascript:void(0);" style="text-decoration: none; color: #333" @click="newAlert()">新增预警</a>
+            <a
+              href="javascript:void(0);"
+              style=" color: #333;text-decoration: none"
+              @click="newAlert()"
+              >新增预警</a
+            >
           </li>
           <li style="padding: 5px">
-            <a href="javascript:void(0);" style="text-decoration: none; color: #333" @click="newMark()">新增灾害点</a>
+            <a
+              href="javascript:void(0);"
+              style=" color: #333;text-decoration: none"
+              @click="newMark()"
+              >新增灾害点</a
+            >
           </li>
         </ul>
       </div>
@@ -292,11 +468,11 @@ const slopeInfo = ref({
   slope_name: "",
   location: {
     lng: 0,
-    lat: 0
+    lat: 0,
   },
   description: "",
   slope_type: "",
-  alert_length: 0
+  alert_length: 0,
 });
 const alertInfo = ref([]);
 const currentAlert = ref({});
@@ -333,6 +509,7 @@ const showDiseaseDialog = ref(false);
 const showPopup = ref(false);
 const showMenu = ref(false);
 const showAlertDialog = ref(false);
+const showImageDrawer = ref(false);
 const menuX = ref(0);
 const menuY = ref(0);
 const popupStyle = ref({ position: "absolute", top: "100px", left: "100px" });
@@ -352,7 +529,8 @@ onMounted(() => {
           section.slopes.forEach((slope) => {
             if (slope.slope_id == slopeId.value) {
               g_slope = slope.milepost;
-              slopeInfo.value.slope_name = section.section_name + slope.milepost;
+              slopeInfo.value.slope_name =
+                section.section_name + slope.milepost;
               slopeInfo.value.location = slope.location;
               slopeInfo.value.slope_type = slope.slope_type;
               slopeInfo.value.alert_length = slope.alerts.length;
@@ -366,13 +544,14 @@ onMounted(() => {
                 .then((response) => response.json())
                 .then((data) => {
                   imageList = [].concat(data);
+                  // console.log(imageList);
                 })
                 .catch((error) => {
                   console.error("Error fetching JSON data:", error);
                   ElNotification({
-                    title: 'Error',
-                    message: '图片加载失败',
-                    type: 'error',
+                    title: "Error",
+                    message: "图片加载失败",
+                    type: "error",
                     offset: 50,
                   });
                 });
@@ -472,23 +651,18 @@ const onEntityMarkEvt = (e) => {
   }
 };
 
-// const switchModel = () => {
-//   groundTileset.show = !modelState.value;
-//   slopeTileset.show = modelState.value;
-// };
-
 const showImages = () => {
-  var imagesList = [];
+  var imageUrlsList = [];
   imageList.forEach((image) => {
     if (
       Math.abs(image.gps.lng - currentPos.lng) < 0.0004 &&
       Math.abs(image.gps.lat - currentPos.lat) < 0.0004
     ) {
-      imagesList.push("/" + g_slope + "/survey/" + image.id + ".JPG");
+      imageUrlsList.push("/" + g_slope + "/survey/" + image.id + ".JPG");
     }
   });
   viewerApi({
-    images: imagesList,
+    images: imageUrlsList,
   });
 };
 
@@ -509,7 +683,7 @@ const newMark = () => {
     currentAlert.value.disease.marks.push({
       lng: currentPos.lng,
       lat: currentPos.lat,
-      height: currentPos.height
+      height: currentPos.height,
     });
   }
 };
@@ -521,16 +695,16 @@ const deleteMark = () => {
   if (currentDisease.value.heights) {
     currentDisease.value.heights.splice(markIndex.value, 1);
   }
-  ElMessage.success('删除成功');
+  ElMessage.success("删除成功");
   showDiseaseDialog.value = false;
-}
+};
 
 const changeMark = () => {
   // 调用接口
 
-  ElMessage.success('变更成功');
+  ElMessage.success("变更成功");
   showDiseaseDialog.value = false;
-}
+};
 
 const newAlert = () => {
   const al = {
@@ -569,22 +743,21 @@ const deleteAlert = () => {
   const index = alertInfo.value.findIndex(
     (item) => item.alert_id === currentAlert.value.alert_id
   );
-  alertInfo.value.splice(index, 1)
-  ElMessage.success('删除成功');
+  alertInfo.value.splice(index, 1);
+  ElMessage.success("删除成功");
   showAlertDialog.value = false;
-}
+};
 
 const changeAlert = () => {
   // 调用接口
 
-  ElMessage.success('变更成功');
+  ElMessage.success("变更成功");
   showAlertDialog.value = false;
-}
+};
 
 const hideMenu = () => {
   showMenu.value = false;
 };
-
 
 const onViewerReady = async ({ Cesium, viewer }) => {
   console.log("Cesium Version:", Cesium.VERSION);
@@ -622,18 +795,15 @@ const onViewerReady = async ({ Cesium, viewer }) => {
   // );
   // viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
 
-
   // 获取加载请求对象，处理滑坡模型加载失败的情况
   slopeTileset.value.creatingPromise.catch((err) => {
     ElNotification({
-      title: 'Error',
-      message: '模型加载失败',
-      type: 'error',
+      title: "Error",
+      message: "模型加载失败",
+      type: "error",
       offset: 50,
     });
-  })
-
-
+  });
 
   viewer.screenSpaceEventHandler.setInputAction(function onRightClick(
     movement
@@ -677,8 +847,7 @@ const onSlopeTilesetReady = ({ cesiumObject: tileset, viewer }) => {
     g_Cesium.HeadingPitchRange(0.0, -0.5, boundingSphere.radius * 1.5)
   );
   viewer.camera.lookAtTransform(g_Cesium.Matrix4.IDENTITY);
-}
-
+};
 </script>
 
 <style lang="scss" scoped>
@@ -688,8 +857,8 @@ const onSlopeTilesetReady = ({ cesiumObject: tileset, viewer }) => {
 
 .slope-viewer {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
 }
@@ -716,10 +885,9 @@ const onSlopeTilesetReady = ({ cesiumObject: tileset, viewer }) => {
   top: 20px;
   left: 20px;
   padding: 10px;
-
   color: #e2dede;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 25px 25px 25px 25px;
+  background: rgb(0 0 0 / 20%);
+  border-radius: 25px;
 }
 
 .slope-info {
@@ -741,49 +909,49 @@ const onSlopeTilesetReady = ({ cesiumObject: tileset, viewer }) => {
 }
 
 .alert-info {
+  position: absolute;
   z-index: 1000;
   width: 250px;
   height: 180px;
-  border: 2px solid #ffffff;
-  border-radius: 4px;
-  box-shadow: 0px 0px 2px grey;
-  position: absolute;
   background-color: #7fd3cad9;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  box-shadow: 0 0 2px grey;
 
   .alert-info-title {
-    text-align: center;
-    font-size: 18px;
-    margin: 0px;
     height: 25px;
+    margin: 0;
+    font-size: 18px;
+    text-align: center;
   }
 
   .alert-info-content {
-    margin: 0px 10px;
     height: 75px;
+    margin: 0 10px;
   }
 
   .triangle-bottom {
+    position: absolute;
+    top: 180px;
+    left: 115px;
     width: 0;
     height: 0;
-    border-top: 10px solid #ffffff;
-    border-left: 10px dashed transparent;
+    border-top: 10px solid #fff;
     border-right: 10px dashed transparent;
-    position: absolute;
-    left: 115px;
-    top: 180px;
+    border-left: 10px dashed transparent;
   }
 }
 
 .image-list {
   display: grid;
-  grid-row-gap: v-bind(rowGap);
   grid-template-columns: repeat(auto-fill, v-bind(width));
+  grid-row-gap: v-bind(rowgap);
   justify-content: space-between;
 
   .image-style {
     width: v-bind(width);
     height: v-bind(height);
-    border-radius: v-bind(borderRadius);
+    border-radius: v-bind(borderradius);
   }
 }
 </style>
