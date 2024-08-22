@@ -44,14 +44,18 @@
             <vc-entity
               :id="alert.alert_id.toString()"
               :name="alert.alert_name"
-              :show="alertState"
+              :show="showAlert"
               @dblclick="pickEntityAlertEvt"
               @mouseover="onEntityAlertEvt"
               @mouseout="onEntityAlertEvt"
             >
               <vc-graphics-polygon
                 :hierarchy="alert.disease.area"
-                :material="[255, 255, 0, 125]"
+                :material="
+                  alert.status != '已处理'
+                    ? [245, 108, 108, 125]
+                    : [103, 194, 58, 125]
+                "
                 :extrudedHeight="0"
                 :perPositionHeight="true"
                 :outline="true"
@@ -64,7 +68,7 @@
                 :position="mark"
                 :id="alert.alert_id.toString() + '|' + index"
                 :name="alert.alert_name"
-                :show="alertState"
+                :show="showAlert"
                 @click="pickEntityMarkEvt"
                 @mouseover="onEntityMarkEvt"
                 @mouseout="onEntityMarkEvt"
@@ -78,6 +82,24 @@
                 />
               </vc-entity>
             </div>
+          </div>
+
+          <!-- 检测出来的发现缺陷的照片 -->
+          <div v-for="(image, index) in detectionEntities" :key="index">
+            <vc-entity
+              :position="image.position"
+              :id="image.id"
+              :show="showDetection"
+              @click="pickEntityDetectionEvt"
+            >
+              <vc-graphics-billboard
+                image="./images/map-slope.png"
+                :scale="1.5"
+                :horizontal-origin="0"
+                :verticalOrigin="1"
+                :heightReference="1"
+              />
+            </vc-entity>
           </div>
 
           <!-- 划定要新增的预警区域 -->
@@ -125,12 +147,15 @@
             >
           </div>
           <div>
-            <el-button type="danger" round @click="showImageDrawer = true"
-              >图片</el-button
+            <el-button
+              type="danger"
+              round
+              @click="showDisasterDetectionDialog = true"
+              >缺陷检测</el-button
             >
           </div>
           <div>
-            <span>模型 </span>
+            <span>显示模型 </span>
             <el-switch
               v-model="modelState"
               style="
@@ -141,9 +166,20 @@
             />
           </div>
           <div>
-            <span>预警 </span>
+            <span>显示预警 </span>
             <el-switch
-              v-model="alertState"
+              v-model="showAlert"
+              style="
+
+                --el-switch-on-color: #13ce66;
+                --el-switch-off-color: #ff4949;
+              "
+            />
+          </div>
+          <div>
+            <span>显示检测 </span>
+            <el-switch
+              v-model="showDetection"
               style="
 
                 --el-switch-on-color: #13ce66;
@@ -324,9 +360,10 @@
             </el-col>
             <el-col :span="20">
               <el-image
-                style="width: 100px; height: 100px"
+                style="width: 100%"
                 :src="currentDisease?.image_url[0]"
                 :zoom-rate="1.2"
+                title="点击查看所有照片"
                 :preview-src-list="[].concat(currentDisease?.image_url)"
                 :initial-index="0"
                 fit="contain"
@@ -344,33 +381,120 @@
         </template>
       </el-dialog>
 
-      <!-- 图片列表 -->
-      <el-drawer v-model="showImageDrawer">
-        <template #header>
-          <h4>图片列表</h4>
-        </template>
-        <template #default>
-          <el-button type="primary" style="margin-bottom: 16px"
-            >开始扫描</el-button
+      <!-- 缺陷检测对话框 -->
+      <el-dialog
+        v-model="showDisasterDetectionDialog"
+        title="缺陷检测"
+        width="500"
+        :close-on-click-modal="false"
+      >
+        <el-row justify="start">
+          <el-button type="danger" @click="disasterDetection('all')"
+            >检测所有照片</el-button
           >
-          <el-scrollbar>
-            <el-image
-              v-for="(image, index) in imageList"
-              :key="index"
-              style="width: 100%"
-              :src="'./' + g_slope + '/survey/' + image.id + '.JPG'"
-              fit="fill"
-              :lazy="true"
-            />
-          </el-scrollbar>
-        </template>
+          <el-button type="primary">上传照片</el-button>
+        </el-row>
+        <el-divider content-position="center">检测报告</el-divider>
+        <div v-loading="detectionLoading" element-loading-text="正在检测中...">
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>检测总数：</div>
+            </el-col>
+            <el-col :span="20">
+              {{ detectionInfo.detectedNum }}
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>缺陷数量：</div>
+            </el-col>
+            <el-col :span="20">
+              {{ detectionInfo.disasterNum }}
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>缺陷图片：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-image
+                v-if="detectionInfo.images.length > 0"
+                style="width: 100%"
+                :src="detectionInfo.imageUrls[0]"
+                :zoom-rate="1.2"
+                title="点击查看所有照片"
+                :preview-src-list="[].concat(detectionInfo.imageUrls)"
+                :initial-index="0"
+                fit="contain"
+                hide-on-click-modal
+              />
+              <span v-else>未检测出缺陷</span>
+            </el-col>
+          </el-row>
+        </div>
         <template #footer>
-          <div style="flex: auto">
-            <!-- <el-button @click="cancelClick">cancel</el-button>
-            <el-button type="primary" @click="confirmClick">confirm</el-button> -->
+          <div class="dialog-footer">
+            <el-button @click="showDisasterDetectionDialog = false"
+              >取消</el-button
+            >
+            <el-button type="primary" @click="handleDetectionConfirm">
+              确认
+            </el-button>
           </div>
         </template>
-      </el-drawer>
+      </el-dialog>
+
+      <!-- 缺陷检测详情 -->
+      <el-dialog
+        v-model="showDetectionDialog"
+        :title="'缺陷检测详情'"
+        width="500"
+        :close-on-click-modal="false"
+      >
+        <div>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>图片编号：</div>
+            </el-col>
+            <el-col :span="20">
+              {{ currentDetection?.id }}
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>预测概率：</div>
+            </el-col>
+            <el-col :span="20">
+              {{ currentDetection?.prediction }}
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>缺陷图片：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-image
+                style="width: 100%"
+                :src="currentDetection?.url"
+                :zoom-rate="1.2"
+                title="点击查看照片"
+                :preview-src-list="[].concat(currentDetection?.url)"
+                :initial-index="0"
+                fit="contain"
+                hide-on-click-modal
+              />
+            </el-col>
+          </el-row>
+        </div>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="showDetectionDialog = false">取消</el-button>
+            <el-button type="primary" @click="deleteDetectionEntity">
+              已处理
+            </el-button>
+          </div>
+        </template>
+      </el-dialog>
 
       <!-- 右键菜单 -->
       <div
@@ -384,11 +508,11 @@
           box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
         "
       >
-        <ul style=" padding: 0;list-style-type: none">
+        <ul style="padding: 0; list-style-type: none">
           <li style="padding: 5px">
             <a
               href="javascript:void(0);"
-              style=" color: #333;text-decoration: none"
+              style="color: #333; text-decoration: none"
               @click="showImages()"
               >查看图片</a
             >
@@ -396,7 +520,15 @@
           <li style="padding: 5px">
             <a
               href="javascript:void(0);"
-              style=" color: #333;text-decoration: none"
+              style="color: #333; text-decoration: none"
+              @click="disasterDetection('around')"
+              >在周围进行缺陷检测</a
+            >
+          </li>
+          <li style="padding: 5px">
+            <a
+              href="javascript:void(0);"
+              style="color: #333; text-decoration: none"
               @click="setAlertPolygon()"
               >标定预警区域</a
             >
@@ -404,7 +536,7 @@
           <li style="padding: 5px">
             <a
               href="javascript:void(0);"
-              style=" color: #333;text-decoration: none"
+              style="color: #333; text-decoration: none"
               @click="reSetAlertPolygon()"
               >重置预警区域</a
             >
@@ -412,7 +544,7 @@
           <li style="padding: 5px">
             <a
               href="javascript:void(0);"
-              style=" color: #333;text-decoration: none"
+              style="color: #333; text-decoration: none"
               @click="newAlert()"
               >新增预警</a
             >
@@ -420,7 +552,7 @@
           <li style="padding: 5px">
             <a
               href="javascript:void(0);"
-              style=" color: #333;text-decoration: none"
+              style="color: #333; text-decoration: none"
               @click="newMark()"
               >新增灾害点</a
             >
@@ -463,7 +595,8 @@ var slopeTileset = ref(null);
 var imageList = [];
 const scale = ref(1.25);
 const modelState = ref(true);
-const alertState = ref(true);
+const showAlert = ref(true);
+const showDetection = ref(true);
 const slopeInfo = ref({
   slope_name: "",
   location: {
@@ -475,8 +608,10 @@ const slopeInfo = ref({
   alert_length: 0,
 });
 const alertInfo = ref([]);
+const detectionEntities = ref([]);
 const currentAlert = ref({});
 const currentDisease = ref(null);
+const currentDetection = ref(null);
 const markIndex = ref(0);
 const params = ref([]);
 
@@ -506,10 +641,11 @@ var chartOption = {
 const currentPos = {};
 
 const showDiseaseDialog = ref(false);
+const showDisasterDetectionDialog = ref(false);
+const showDetectionDialog = ref(false);
 const showPopup = ref(false);
 const showMenu = ref(false);
 const showAlertDialog = ref(false);
-const showImageDrawer = ref(false);
 const menuX = ref(0);
 const menuY = ref(0);
 const popupStyle = ref({ position: "absolute", top: "100px", left: "100px" });
@@ -519,6 +655,15 @@ const newAlertForm = ref({
     area: [],
   },
 });
+
+const detectionInfo = ref({
+  detectedNum: "", // 检测的照片总数
+  disasterNum: "", // 检测出有缺陷的照片数量
+  images: [], // 返回的检测出的有缺陷的照片信息
+  imageUrls: [],
+});
+
+const detectionLoading = ref(false);
 
 onMounted(() => {
   // console.log(sectionId.value, slopeId.value);
@@ -569,6 +714,17 @@ const pickEntityAlertEvt = (e) => {
   // console.log(e.cesiumObject.id);
   showAlertDialog.value = true;
   showPopup.value = false;
+};
+
+const pickEntityDetectionEvt = (e) => {
+  // console.log(e.cesiumObject.id);
+  const index = detectionEntities.value.findIndex(
+    (item) => item.id === e.cesiumObject.id
+  );
+  if (index > -1) {
+    currentDetection.value = detectionEntities.value[index];
+    showDetectionDialog.value = true;
+  }
 };
 
 const pickEntityMarkEvt = (e) => {
@@ -755,6 +911,75 @@ const changeAlert = () => {
   showAlertDialog.value = false;
 };
 
+const disasterDetection = (type) => {
+  detectionLoading.value = true;
+  showDisasterDetectionDialog.value = true;
+  // 模拟调用算法接口：
+  // 接口输入：待检测的图片
+  var detectedImages = [];
+  if (type === "all") {
+    // 所有图片
+    detectedImages = imageList;
+  } else if (type === "around") {
+    // 指定位置周围的照片
+    imageList.forEach((image) => {
+      if (
+        Math.abs(image.gps.lng - currentPos.lng) < 0.0004 &&
+        Math.abs(image.gps.lat - currentPos.lat) < 0.0004
+      ) {
+        detectedImages.push(image);
+      }
+    });
+  }
+
+  // 接口返回结果：假设检测的前3张照片有缺陷
+  const responseData = {
+    // 检测的照片总数
+    detectedNum: detectedImages.length,
+    // 检测出有缺陷的照片数量
+    disasterNum: 3,
+    // 返回的检测出的有缺陷的照片信息
+    images: [detectedImages[0], detectedImages[1], detectedImages[2]],
+  };
+
+  // 等待2秒，模拟算法处理时间
+  setTimeout(() => {
+    detectionInfo.value = {
+      ...responseData,
+      imageUrls: [],
+    };
+    detectionInfo.value.images.forEach((image) => {
+      image.prediction = "70%"; // 预测可信度
+      detectionInfo.value.imageUrls.push(
+        "/" + g_slope + "/survey/" + image.id + ".JPG"
+      );
+    });
+    detectionLoading.value = false;
+  }, 1000);
+};
+
+const handleDetectionConfirm = () => {
+  showDisasterDetectionDialog.value = false;
+  detectionEntities.value = [];
+  detectionInfo.value.images.forEach((image) => {
+    detectionEntities.value.push({
+      id: image.id,
+      position: image.gps,
+      url: "/" + g_slope + "/survey/" + image.id + ".JPG",
+      prediction: image.prediction,
+    });
+  });
+};
+
+const deleteDetectionEntity = () => {
+  const index = detectionEntities.value.findIndex(
+    (item) => item.id === currentDetection.value.id
+  );
+  detectionEntities.value.splice(index, 1);
+  ElMessage.success("处理完成");
+  showDetectionDialog.value = false;
+};
+
 const hideMenu = () => {
   showMenu.value = false;
 };
@@ -770,30 +995,6 @@ const onViewerReady = async ({ Cesium, viewer }) => {
   // viewer.scene.screenSpaceCameraController.rotateEventTypes = [Cesium.CameraEventType.RIGHT_DRAG];
 
   // viewer.scene.primitives.removeAll();
-
-  //加载地面模型数据
-  // groundTileset = await Cesium.Cesium3DTileset.fromIonAssetId(2670980);
-  // viewer.scene.primitives.add(groundTileset);
-  // groundTileset.show = !modelState.value;
-
-  //加载倾斜模型数据
-  // var url = "./" + g_slope + "/terra/tileset.json";
-  // slopeTileset = await Cesium.Cesium3DTileset.fromUrl(url, {
-  //   //控制切片视角显示的数量，可调整性能
-  //   maximumScreenSpaceError: 2,
-  //   maximumNumberOfLoadedTiles: 100000,
-  // });
-  // viewer.scene.primitives.add(slopeTileset);
-  // slopeTileset.show = false;
-  //控制模型的位置
-
-  //获取3Dtlies的bounds范围，然后移动相机
-  // var boundingSphere = slopeTileset.boundingSphere;
-  // viewer.camera.viewBoundingSphere(
-  //   boundingSphere,
-  //   new Cesium.HeadingPitchRange(0.0, -0.5, boundingSphere.radius * 1.5)
-  // );
-  // viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
 
   // 获取加载请求对象，处理滑坡模型加载失败的情况
   slopeTileset.value.creatingPromise.catch((err) => {
