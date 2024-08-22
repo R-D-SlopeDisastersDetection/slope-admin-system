@@ -27,7 +27,7 @@
             ref="groundTileset"
             :assetId="2670980"
             :show="!modelState"
-            :maximumScreenSpaceError="32"
+            :maximumScreenSpaceError="64"
             :pointCloudShading="{ attenuation: true, maximumAttenuation: 4 }"
           />
 
@@ -107,7 +107,7 @@
           <div>
             <vc-entity>
               <vc-graphics-polygon
-                :hierarchy="newAlertForm.disease.area"
+                :hierarchy="newAlertArea"
                 :material="[0, 255, 255, 125]"
                 :extrudedHeight="0"
                 :perPositionHeight="true"
@@ -115,10 +115,7 @@
                 outlineColor="black"
               />
             </vc-entity>
-            <div
-              v-for="(mark, index) in newAlertForm.disease.area"
-              :key="index"
-            >
+            <div v-for="(mark, index) in newAlertArea" :key="index">
               <vc-entity :position="mark">
                 <vc-graphics-billboard
                   :image="image"
@@ -288,8 +285,26 @@
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button type="primary" @click="changeAlert()">变更</el-button>
-            <el-button type="danger" @click="deleteAlert()"> 删除 </el-button>
+            <el-button
+              v-if="!showNewAlertDialog"
+              type="primary"
+              @click="changeAlert()"
+              >变更</el-button
+            >
+            <el-button
+              v-if="!showNewAlertDialog"
+              type="danger"
+              @click="deleteAlert()"
+            >
+              删除
+            </el-button>
+            <el-button
+              v-if="showNewAlertDialog"
+              type="danger"
+              @click="newAlert()"
+            >
+              新增
+            </el-button>
           </div>
         </template>
       </el-dialog>
@@ -300,7 +315,7 @@
         style="position: absolute; right: 20px"
         top="70px"
         :close-on-click-modal="true"
-        :title="'病害点:' + markIndex"
+        :title="'灾害点:' + markIndex"
         width="500"
         :draggable="true"
         :modal="false"
@@ -334,7 +349,7 @@
           </el-row>
           <el-row style="margin-bottom: 16px">
             <el-col :span="4">
-              <div>病害：</div>
+              <div>评估：</div>
             </el-col>
             <el-col :span="20">
               <el-input v-model="currentDisease.assessment" />
@@ -361,6 +376,7 @@
             </el-col>
             <el-col :span="20">
               <el-image
+                v-if="currentDisease?.image_url.length > 0"
                 style="width: 100%"
                 :src="currentDisease?.image_url[0]"
                 :zoom-rate="1.2"
@@ -370,6 +386,11 @@
                 fit="contain"
                 hide-on-click-modal
               />
+              <el-upload v-else list-type="picture-card">
+                <el-icon>
+                  <Plus />
+                </el-icon>
+              </el-upload>
             </el-col>
           </el-row>
         </div>
@@ -476,7 +497,7 @@
             <el-col :span="20">
               <el-image
                 style="width: 100%"
-                :src="currentDetection?.url"
+                :src="currentDetection?.url[0]"
                 :zoom-rate="1.2"
                 title="点击查看照片"
                 :preview-src-list="[].concat(currentDetection?.url)"
@@ -489,9 +510,9 @@
         </div>
         <template #footer>
           <div class="dialog-footer">
-            <el-button @click="showDetectionDialog = false">取消</el-button>
-            <el-button type="primary" @click="deleteDetectionEntity">
-              已处理
+            <el-button @click="deleteDetectionEntity">删除</el-button>
+            <el-button type="primary" @click="newAlertByDetection">
+              从标定位置创建预警区域
             </el-button>
           </div>
         </template>
@@ -514,8 +535,32 @@
             <a
               href="javascript:void(0);"
               style="color: #333; text-decoration: none"
-              @click="showImages()"
-              >查看图片</a
+              @click="setAlertPolygon()"
+              >标定预警区域</a
+            >
+          </li>
+          <li style="padding: 5px">
+            <a
+              href="javascript:void(0);"
+              style="color: #333; text-decoration: none"
+              @click="reSetAlertPolygon()"
+              >重置标定位置</a
+            >
+          </li>
+          <li style="padding: 5px">
+            <a
+              href="javascript:void(0);"
+              style="color: #333; text-decoration: none"
+              @click="newAlertDialog"
+              >从标定位置创建预警区域</a
+            >
+          </li>
+          <li style="padding: 5px">
+            <a
+              href="javascript:void(0);"
+              style="color: #333; text-decoration: none"
+              @click="newMark()"
+              >新增灾害点</a
             >
           </li>
           <li style="padding: 5px">
@@ -530,32 +575,8 @@
             <a
               href="javascript:void(0);"
               style="color: #333; text-decoration: none"
-              @click="setAlertPolygon()"
-              >标定预警区域</a
-            >
-          </li>
-          <li style="padding: 5px">
-            <a
-              href="javascript:void(0);"
-              style="color: #333; text-decoration: none"
-              @click="reSetAlertPolygon()"
-              >重置预警区域</a
-            >
-          </li>
-          <li style="padding: 5px">
-            <a
-              href="javascript:void(0);"
-              style="color: #333; text-decoration: none"
-              @click="newAlert()"
-              >新增预警</a
-            >
-          </li>
-          <li style="padding: 5px">
-            <a
-              href="javascript:void(0);"
-              style="color: #333; text-decoration: none"
-              @click="newMark()"
-              >新增灾害点</a
+              @click="showImages()"
+              >查看所有照片</a
             >
           </li>
         </ul>
@@ -610,7 +631,31 @@ const slopeInfo = ref({
 });
 const alertInfo = ref([]);
 const detectionEntities = ref([]);
-const currentAlert = ref({});
+const currentAlert = ref({
+  alert_id: -1,
+  alert_name: "",
+  timestamp: "",
+  slope_id: -1,
+  alert_level: "低",
+  alert_prediction: "",
+  location: { lng: 0, lat: 0, height: 0 },
+  description: "",
+  status: "未处理",
+  disease: {
+    detection_id: -1,
+    flight_id: -1,
+    slope_id: -1,
+    discovery_date: "",
+    image_url: [],
+    disease_type: "crack",
+    severity: "low",
+    area: [],
+    marks: [],
+    description: "",
+    assessment: "",
+    status: "未处理",
+  },
+});
 const currentDisease = ref(null);
 const currentDetection = ref(null);
 const markIndex = ref(0);
@@ -639,22 +684,18 @@ var chartOption = {
   ],
 };
 
-const currentPos = {};
-
+const currentPos = { lng: 0, lat: 0, height: 0 };
+const newAlertArea = ref([]);
 const showDiseaseDialog = ref(false);
 const showDisasterDetectionDialog = ref(false);
 const showDetectionDialog = ref(false);
 const showPopup = ref(false);
 const showMenu = ref(false);
 const showAlertDialog = ref(false);
+const showNewAlertDialog = ref(false);
 const menuX = ref(0);
 const menuY = ref(0);
 const popupStyle = ref({ position: "absolute", top: "100px", left: "100px" });
-const newAlertForm = ref({
-  disease: {
-    area: [],
-  },
-});
 
 const detectionInfo = ref({
   detectedNum: "", // 检测的照片总数
@@ -713,6 +754,7 @@ onMounted(() => {
 const pickEntityAlertEvt = (e) => {
   // console.log(e.cesiumObject.id);
   showAlertDialog.value = true;
+  showNewAlertDialog.value = false;
   showPopup.value = false;
 };
 
@@ -823,7 +865,7 @@ const showImages = () => {
 };
 
 const setAlertPolygon = () => {
-  newAlertForm.value.disease.area.push([
+  newAlertArea.value.push([
     currentPos.lng,
     currentPos.lat,
     currentPos.height + 0.1,
@@ -831,7 +873,7 @@ const setAlertPolygon = () => {
 };
 
 const reSetAlertPolygon = () => {
-  newAlertForm.value.disease.area = [];
+  newAlertArea.value = [];
 };
 
 const newMark = () => {
@@ -862,35 +904,44 @@ const changeMark = () => {
   showDiseaseDialog.value = false;
 };
 
-const newAlert = () => {
-  const al = {
+const newAlertDialog = () => {
+  currentAlert.value = {
     alert_id: Date.now(),
-    alert_name: "",
+    alert_name: "xx区域",
     timestamp: Date.now(),
-    slope_id: 5,
+    slope_id: slopeId.value,
     alert_level: "低",
-    alert_prediction: "70%",
+    alert_prediction: "无",
     location: currentPos,
     description: "",
     status: "未处理",
     disease: {
-      detection_id: Date.now(),
+      detection_id: Date.now().toString(),
       flight_id: 7,
-      slope_id: 5,
+      slope_id: slopeId,
       discovery_date: Date.now(),
       image_url: [],
       disease_type: "crack",
       severity: "low",
-      area: newAlertForm.value.disease.area,
+      area: newAlertArea.value,
       marks: [],
       description: "裂缝长度(m) 3 \n裂缝宽度(m) 3 \n裂缝深度(m) 0.5",
       assessment: "",
       status: "未处理",
     },
   };
-  alertInfo.value.push(al);
-  // console.log(al);
-  newAlertForm.value.disease.area = [];
+  showAlertDialog.value = true;
+  showNewAlertDialog.value = true;
+  showPopup.value = false;
+};
+
+const newAlert = () => {
+  // 调用接口
+
+  alertInfo.value.push(currentAlert.value);
+  ElMessage.success("新增成功");
+  showAlertDialog.value = false;
+  newAlertArea.value = [];
 };
 
 const deleteAlert = () => {
@@ -965,7 +1016,7 @@ const handleDetectionConfirm = () => {
     detectionEntities.value.push({
       id: image.id,
       position: image.gps,
-      url: "/" + g_slope + "/survey/" + image.id + ".JPG",
+      url: ["/" + g_slope + "/survey/" + image.id + ".JPG"],
       prediction: image.prediction,
     });
   });
@@ -976,8 +1027,44 @@ const deleteDetectionEntity = () => {
     (item) => item.id === currentDetection.value.id
   );
   detectionEntities.value.splice(index, 1);
-  ElMessage.success("处理完成");
+  ElMessage.success("删除成功");
   showDetectionDialog.value = false;
+};
+
+const newAlertByDetection = () => {
+  const index = detectionEntities.value.findIndex(
+    (item) => item.id === currentDetection.value.id
+  );
+  detectionEntities.value.splice(index, 1);
+  currentAlert.value = {
+    alert_id: Date.now(),
+    alert_name: "xx区域",
+    timestamp: Date.now(),
+    slope_id: slopeId.value,
+    alert_level: "低",
+    alert_prediction: currentDetection.value.prediction,
+    location: currentPos,
+    description: "",
+    status: "未处理",
+    disease: {
+      detection_id: Date.now().toString(),
+      flight_id: 7,
+      slope_id: slopeId,
+      discovery_date: Date.now(),
+      image_url: currentDetection.value.url,
+      disease_type: "crack",
+      severity: "low",
+      area: newAlertArea.value,
+      marks: [],
+      description: "裂缝长度(m) 3 \n裂缝宽度(m) 3 \n裂缝深度(m) 0.5",
+      assessment: "",
+      status: "未处理",
+    },
+  };
+  showDetectionDialog.value = false;
+  showAlertDialog.value = true;
+  showNewAlertDialog.value = true;
+  showPopup.value = false;
 };
 
 const hideMenu = () => {
