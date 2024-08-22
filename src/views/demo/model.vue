@@ -27,7 +27,8 @@
             ref="groundTileset"
             :assetId="2670980"
             :show="!modelState"
-            :maximumScreenSpaceError="128"
+            :maximumScreenSpaceError="32"
+            :pointCloudShading="{ attenuation: true, maximumAttenuation: 4 }"
           />
 
           <!-- 倾斜模型 -->
@@ -649,7 +650,6 @@ const showAlertDialog = ref(false);
 const menuX = ref(0);
 const menuY = ref(0);
 const popupStyle = ref({ position: "absolute", top: "100px", left: "100px" });
-
 const newAlertForm = ref({
   disease: {
     area: [],
