@@ -76,7 +76,7 @@
       top="70px"
       :append-to-body="true"
       :close-on-click-modal="false"
-      :title="'检测点:' + currentSlope.slope_name"
+      :title="'监测点:' + currentSlope.slope_id"
       width="500"
       :draggable="true"
       :modal="false"
@@ -85,10 +85,13 @@
       <div>
         <el-row style="margin-bottom: 16px">
           <el-col :span="4">
-            <div>边坡名称：</div>
+            <div>名称：</div>
           </el-col>
           <el-col :span="20">
-            <el-input v-model="currentSlope.slope_name" />
+            <el-input
+              v-model="currentSlope.slope_name"
+              placeholder="请输入监测点名称"
+            />
           </el-col>
         </el-row>
         <el-row style="margin-bottom: 16px">
@@ -123,7 +126,10 @@
             <div>监测内容：</div>
           </el-col>
           <el-col :span="20">
-            <el-input v-model="currentSlope.slope_type" />
+            <el-input
+              v-model="currentSlope.slope_type"
+              placeholder="请输入监测内容"
+            />
           </el-col>
         </el-row>
         <el-row style="margin-bottom: 16px">
@@ -131,7 +137,10 @@
             <div>描述：</div>
           </el-col>
           <el-col :span="20">
-            <el-input v-model="currentSlope.description" />
+            <el-input
+              v-model="currentSlope.description"
+              placeholder="请输入描述信息"
+            />
           </el-col>
         </el-row>
         <el-row style="margin-bottom: 16px">
@@ -142,7 +151,7 @@
             <el-date-picker
               v-model="currentSlope.construction_date"
               type="date"
-              placeholder="请选择日期"
+              placeholder="请选择施工日期"
               :clearable="false"
             />
           </el-col>
@@ -180,10 +189,10 @@
           <el-col :span="20">
             <el-select
               v-model="currentSlope.status"
-              placeholder="请选择预警等级"
+              placeholder="请选择监测点状态"
             >
-              <el-option label="normal" value="normal" />
-              <el-option label="disease" value="disease" />
+              <el-option label="正常" value="normal" />
+              <el-option label="存在灾害" value="disease" />
             </el-select>
           </el-col>
         </el-row>
@@ -315,10 +324,10 @@ const newSlopeDialog = (e) => {
     slope_name: null,
     location: { lng: e.point.lng, lat: e.point.lat },
     milepost: "",
-    slope_type: "",
+    slope_type: null,
     slope_hight: 0,
     slope_length: 0,
-    description: "",
+    description: null,
     construction_date: Date.now(),
     status: null,
     alerts: [],
