@@ -210,7 +210,7 @@
       <div class="alert-info" v-show="showPopup" :style="popupStyle">
         <h2 class="alert-info-title">{{ currentAlert.alert_name }}</h2>
         <div class="alert-info-content">
-          <div>病害编码：{{ currentAlert.disease?.detection_id }}</div>
+          <div>预警编号：{{ currentAlert.disease?.detection_id }}</div>
           <div>预警时间：{{ currentAlert.timestamp }}</div>
           <div>预警等级：{{ currentAlert.alert_level }}</div>
           <div>预警预测：{{ currentAlert.alert_prediction }}</div>
@@ -231,58 +231,122 @@
         :draggable="true"
         :modal="false"
       >
-        <el-form :model="currentAlert" label-position="left" label-width="auto">
-          <el-form-item label="病害编码:">
-            <el-input
-              v-model="currentAlert.alert_id"
-              :readonly="true"
-              :disabled="true"
-            />
-          </el-form-item>
-          <el-form-item label="病害名称:" placeholder="请输入病害名称">
-            <el-input v-model="currentAlert.alert_name" />
-          </el-form-item>
-          <el-form-item label="预警时间:">
-            <el-date-picker
-              v-model="currentAlert.timestamp"
-              type="date"
-              placeholder="请选择预警时间"
-              :readonly="true"
-              :disabled="true"
-              :clearable="false"
-            />
-          </el-form-item>
-          <el-form-item label="预警等级:">
-            <el-select
-              v-model="currentAlert.alert_level"
-              placeholder="请选择预警等级"
-            >
-              <el-option label="低" value="低" />
-              <el-option label="中" value="中" />
-              <el-option label="高" value="高" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="预警预测:">
-            <el-input
-              v-model="currentAlert.alert_prediction"
-              :readonly="true"
-              :disabled="true"
-            />
-          </el-form-item>
-          <el-form-item label="预警描述:" placeholder="请输入预警描述">
-            <el-input v-model="currentAlert.description" />
-          </el-form-item>
-          <el-form-item label="预警状态:">
-            <el-select
-              v-model="currentAlert.status"
-              placeholder="请选择预警状态"
-            >
-              <el-option label="未处理" value="未处理" />
-              <el-option label="处理中" value="处理中" />
-              <el-option label="已处理" value="已处理" />
-            </el-select>
-          </el-form-item>
-        </el-form>
+        <el-scrollbar max-height="500">
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>预警编码：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-input
+                v-model="currentAlert.alert_id"
+                :readonly="true"
+                :disabled="true"
+              />
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>预警名称：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-input
+                v-model="currentAlert.alert_name"
+                placeholder="请输入预警名称"
+              />
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>预警时间：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-date-picker
+                v-model="currentAlert.timestamp"
+                type="date"
+                placeholder="请选择预警时间"
+                :readonly="true"
+                :disabled="true"
+                :clearable="false"
+              />
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>预警等级：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-select
+                v-model="currentAlert.alert_level"
+                placeholder="请选择预警等级"
+              >
+                <el-option label="低" value="低" />
+                <el-option label="中" value="中" />
+                <el-option label="高" value="高" />
+              </el-select>
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>预测概率：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-input
+                v-model="currentAlert.alert_prediction"
+                :readonly="true"
+                :disabled="true"
+              />
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>预警描述：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-input
+                v-model="currentAlert.description"
+                placeholder="请输入预警描述"
+              />
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>预警状态：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-select
+                v-model="currentAlert.status"
+                placeholder="请选择预警状态"
+              >
+                <el-option label="未处理" value="未处理" />
+                <el-option label="处理中" value="处理中" />
+                <el-option label="已处理" value="已处理" />
+              </el-select>
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>现场图片：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-image
+                v-if="currentAlert.disease?.image_url.length > 0"
+                style="width: 100%"
+                :src="currentAlert.disease?.image_url[0]"
+                :zoom-rate="1.2"
+                title="点击查看所有照片"
+                :preview-src-list="[].concat(currentAlert.disease?.image_url)"
+                :initial-index="0"
+                fit="contain"
+                hide-on-click-modal
+              />
+              <el-upload v-else list-type="picture-card">
+                <el-icon>
+                  <Plus />
+                </el-icon>
+              </el-upload>
+            </el-col>
+          </el-row>
+        </el-scrollbar>
         <template #footer>
           <div class="dialog-footer">
             <el-button
@@ -321,10 +385,10 @@
         :modal="false"
         @open="diseaseDialogOpen()"
       >
-        <div>
+        <el-scrollbar max-height="500">
           <el-row style="margin-bottom: 16px">
             <el-col :span="4">
-              <div>位置：</div>
+              <div>灾害位置：</div>
             </el-col>
             <el-col :span="20">
               <div>经度:{{ currentDisease?.marks[markIndex]?.lng }}</div>
@@ -334,30 +398,47 @@
           </el-row>
           <el-row style="margin-bottom: 16px">
             <el-col :span="4">
-              <div>参数：</div>
+              <div>灾害类型：</div>
             </el-col>
             <el-col :span="20">
-              <div v-show="currentDisease?.disease_type == 'settle'">
-                <div id="settle" style="width: 350px; height: 200px"></div>
-              </div>
-              <div v-if="currentDisease?.disease_type == 'crack'">
-                <div v-for="(param, index) in params" :key="index">
-                  <div>{{ param }}</div>
-                </div>
+              <el-select
+                v-model="currentDisease.disease_type"
+                placeholder="请选择灾害类型"
+              >
+                <el-option label="裂缝" value="crack" />
+                <el-option label="沉降" value="settle" />
+              </el-select>
+            </el-col>
+          </el-row>
+          <el-row style="margin-bottom: 16px">
+            <el-col :span="4">
+              <div>灾害描述：</div>
+            </el-col>
+            <el-col :span="20">
+              <div>
+                <el-input
+                  v-model="currentDisease.description"
+                  type="textarea"
+                  :rows="3"
+                  placeholder="请输入灾害描述"
+                />
               </div>
             </el-col>
           </el-row>
           <el-row style="margin-bottom: 16px">
             <el-col :span="4">
-              <div>评估：</div>
+              <div>灾害评估：</div>
             </el-col>
             <el-col :span="20">
-              <el-input v-model="currentDisease.assessment" />
+              <el-input
+                v-model="currentDisease.assessment"
+                placeholder="请输入灾害评估"
+              />
             </el-col>
           </el-row>
           <el-row style="margin-bottom: 16px">
             <el-col :span="4">
-              <div>状态：</div>
+              <div>灾害状态：</div>
             </el-col>
             <el-col :span="20">
               <el-select
@@ -370,30 +451,21 @@
               </el-select>
             </el-col>
           </el-row>
-          <el-row style="margin-bottom: 16px">
+          <el-row
+            style="margin-bottom: 16px"
+            v-show="currentDisease?.disease_type == 'settle'"
+          >
             <el-col :span="4">
-              <div>图片：</div>
+              <div>沉降分析：</div>
             </el-col>
             <el-col :span="20">
-              <el-image
-                v-if="currentDisease?.image_url.length > 0"
-                style="width: 100%"
-                :src="currentDisease?.image_url[0]"
-                :zoom-rate="1.2"
-                title="点击查看所有照片"
-                :preview-src-list="[].concat(currentDisease?.image_url)"
-                :initial-index="0"
-                fit="contain"
-                hide-on-click-modal
-              />
-              <el-upload v-else list-type="picture-card">
-                <el-icon>
-                  <Plus />
-                </el-icon>
-              </el-upload>
+              <div v-show="currentDisease?.heights">
+                <div id="settle" style="width: 350px; height: 200px"></div>
+              </div>
+              <div v-show="!currentDisease?.heights">暂无历史数据</div>
             </el-col>
           </el-row>
-        </div>
+        </el-scrollbar>
 
         <template #footer>
           <div class="dialog-footer">
@@ -659,7 +731,6 @@ const currentAlert = ref({
 const currentDisease = ref(null);
 const currentDetection = ref(null);
 const markIndex = ref(0);
-const params = ref([]);
 
 const chart: Ref<echarts.ECharts | null> = ref(null);
 var chartOption = {
@@ -793,7 +864,6 @@ const diseaseDialogOpen = () => {
   }
 
   // 更新图表
-  params.value = currentDisease.value.description.split("\n");
   const heights = currentDisease.value.heights;
   if (heights) {
     if (chart.value != null) {
@@ -905,28 +975,37 @@ const changeMark = () => {
 };
 
 const newAlertDialog = () => {
+  // 格式化当前日期
+  let date = new Date();
+  let year = date.getFullYear();
+  let month = date.getMonth() + 1;
+  let day = date.getDate();
+  if (month < 10) month = `0${month}`;
+  if (day < 10) day = `0${day}`;
+  let strDate = `${year}-${month}-${day}`;
+
   currentAlert.value = {
     alert_id: Date.now(),
-    alert_name: "xx区域",
-    timestamp: Date.now(),
+    alert_name: null,
+    timestamp: strDate,
     slope_id: slopeId.value,
     alert_level: "低",
     alert_prediction: "无",
     location: currentPos,
-    description: "",
+    description: null,
     status: "未处理",
     disease: {
       detection_id: Date.now().toString(),
       flight_id: 7,
-      slope_id: slopeId,
-      discovery_date: Date.now(),
+      slope_id: slopeId.value,
+      discovery_date: strDate,
       image_url: [],
-      disease_type: "crack",
+      disease_type: null,
       severity: "low",
       area: newAlertArea.value,
       marks: [],
-      description: "裂缝长度(m) 3 \n裂缝宽度(m) 3 \n裂缝深度(m) 0.5",
-      assessment: "",
+      description: null,
+      assessment: null,
       status: "未处理",
     },
   };
@@ -1035,29 +1114,40 @@ const newAlertByDetection = () => {
   const index = detectionEntities.value.findIndex(
     (item) => item.id === currentDetection.value.id
   );
+  // 删除检测实体
   detectionEntities.value.splice(index, 1);
+
+  // 格式化当前日期
+  let date = new Date();
+  let year = date.getFullYear();
+  let month = date.getMonth() + 1;
+  let day = date.getDate();
+  if (month < 10) month = `0${month}`;
+  if (day < 10) day = `0${day}`;
+  let strDate = `${year}-${month}-${day}`;
+
   currentAlert.value = {
     alert_id: Date.now(),
-    alert_name: "xx区域",
-    timestamp: Date.now(),
+    alert_name: null,
+    timestamp: strDate,
     slope_id: slopeId.value,
     alert_level: "低",
     alert_prediction: currentDetection.value.prediction,
     location: currentPos,
-    description: "",
+    description: null,
     status: "未处理",
     disease: {
       detection_id: Date.now().toString(),
       flight_id: 7,
       slope_id: slopeId,
-      discovery_date: Date.now(),
+      discovery_date: strDate,
       image_url: currentDetection.value.url,
-      disease_type: "crack",
+      disease_type: null,
       severity: "low",
       area: newAlertArea.value,
       marks: [],
-      description: "裂缝长度(m) 3 \n裂缝宽度(m) 3 \n裂缝深度(m) 0.5",
-      assessment: "",
+      description: null,
+      assessment: null,
       status: "未处理",
     },
   };
