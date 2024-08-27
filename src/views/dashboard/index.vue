@@ -401,8 +401,8 @@ const onSlopeMarkEvent = ({ type, target }, slope) => {
     showNewSlopeDialog.value = false;
     currentSlope.value = slope;
   } else if (type === "ondblclick") {
-    var point = new BMap.Point(slope.location.lng, slope.location.lat);
-    g_map.centerAndZoom(point, 18); // 移动成为中心点，并放大
+    // var point = new BMap.Point(slope.location.lng, slope.location.lat);
+    // g_map.centerAndZoom(point, 18); // 移动成为中心点，并放大
     appStore.setModelId(slope.section_id, slope.slope_id);
     router.replace("/redirect/slope/model");
   }

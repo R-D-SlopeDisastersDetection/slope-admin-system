@@ -23,6 +23,7 @@ export const useAppStore = defineStore("app", () => {
 
   const sectionId = useStorage("sectionId", 1);
   const slopeId = useStorage("slopeId", 5);
+  const alertId = useStorage("alertId", 1);
 
   // 顶部菜单激活路径
   const activeTopMenuPath = useStorage("activeTopMenuPath", "");
@@ -64,6 +65,11 @@ export const useAppStore = defineStore("app", () => {
     slopeId.value = slp;
   }
 
+  // 设置模型
+  function setAlertId(alt: number) {
+    alertId.value = alt;
+  }
+
   // 切换设备
   function toggleDevice(val: string) {
     device.value = val;
@@ -96,11 +102,13 @@ export const useAppStore = defineStore("app", () => {
     sidebar,
     sectionId,
     slopeId,
+    alertId,
     language,
     locale,
     size,
     activeTopMenu,
     setModelId,
+    setAlertId,
     toggleDevice,
     changeSize,
     changeLanguage,

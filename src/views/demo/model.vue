@@ -213,7 +213,7 @@
           <div>预警编号：{{ currentAlert.disease?.detection_id }}</div>
           <div>预警时间：{{ currentAlert.timestamp }}</div>
           <div>预警等级：{{ currentAlert.alert_level }}</div>
-          <div>预警预测：{{ currentAlert.alert_prediction }}</div>
+          <div>预测概率：{{ currentAlert.alert_prediction }}</div>
           <div>预警描述：{{ currentAlert.description }}</div>
           <div>预警状态：{{ currentAlert.status }}</div>
         </div>
@@ -350,20 +350,27 @@
         <template #footer>
           <div class="dialog-footer">
             <el-button
-              v-if="!showNewAlertDialog"
+              v-show="!showNewAlertDialog"
+              type="primary"
+              @click="showLocalModel()"
+            >
+              显示详细信息
+            </el-button>
+            <el-button
+              v-show="!showNewAlertDialog"
               type="primary"
               @click="changeAlert()"
               >变更</el-button
             >
             <el-button
-              v-if="!showNewAlertDialog"
+              v-show="!showNewAlertDialog"
               type="danger"
               @click="deleteAlert()"
             >
               删除
             </el-button>
             <el-button
-              v-if="showNewAlertDialog"
+              v-show="showNewAlertDialog"
               type="danger"
               @click="newAlert()"
             >
@@ -664,6 +671,7 @@ import MonitorAPI, { Section } from "@/api/monitor";
 import { api as viewerApi } from "v-viewer";
 import { Check, Close } from "@element-plus/icons-vue";
 import * as echarts from "echarts";
+import router from "@/router";
 defineOptions({
   name: "Dashboard",
   inheritAttrs: false,
@@ -1155,6 +1163,11 @@ const newAlertByDetection = () => {
   showAlertDialog.value = true;
   showNewAlertDialog.value = true;
   showPopup.value = false;
+};
+
+const showLocalModel = () => {
+  appStore.setAlertId(currentAlert.value.alert_id);
+  router.replace("/redirect/slope/detail");
 };
 
 const hideMenu = () => {
