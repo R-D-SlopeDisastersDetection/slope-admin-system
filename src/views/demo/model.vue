@@ -34,7 +34,13 @@
           <!-- 倾斜模型 -->
           <vc-primitive-tileset
             ref="slopeTileset"
-            :url="'./' + g_slope + '/terra/tileset.json'"
+            :url="
+              './' +
+              slopeInfo.milepost +
+              '/' +
+              slopeInfo.currentTimeStamp +
+              '/terra/tileset.json'
+            "
             :show="modelState"
             @ready="onSlopeTilesetReady"
             :maximumScreenSpaceError="2"
@@ -140,6 +146,20 @@
       >
         <el-space :size="12" direction="horizontal">
           <div>
+            <el-select
+              v-model="slopeInfo.currentTimeStamp"
+              placeholder="请选择模型日期"
+              style="width: 200px"
+            >
+              <el-option
+                v-for="(timestamp, index) in slopeInfo.timestamps"
+                :key="index"
+                :label="timestamp"
+                :value="timestamp"
+              />
+            </el-select>
+          </div>
+          <div>
             <el-button type="danger" round @click="viewerRef.reload()"
               >重载</el-button
             >
@@ -195,13 +215,16 @@
             <span>监测地点：{{ slopeInfo.slope_name }}</span>
           </li>
           <li>
+            <span>监测时间：{{ slopeInfo.currentTimeStamp }}</span>
+          </li>
+          <li>
             <span>{{ slopeInfo.description }}</span>
           </li>
           <li>
             <span>监测内容：{{ slopeInfo.slope_type }}</span>
           </li>
           <li>
-            <span>预警数量：{{ slopeInfo.alert_length }}</span>
+            <span>预警数量：{{ slopeInfo.alerts.length }}</span>
           </li>
         </ul>
       </div>
@@ -691,7 +714,6 @@ const distanceDisplayCondition = { near: 0, far: 20000000 };
 
 var g_Cesium = null;
 var g_viewer = null;
-var g_slope = null;
 var groundTileset = ref(null);
 var slopeTileset = ref(null);
 var imageList = [];
@@ -701,13 +723,16 @@ const showAlert = ref(true);
 const showDetection = ref(true);
 const slopeInfo = ref({
   slope_name: "",
+  milepost: "",
   location: {
     lng: 0,
     lat: 0,
   },
   description: "",
   slope_type: "",
-  alert_length: 0,
+  alerts: [],
+  timestamps: [],
+  currentTimeStamp: "",
 });
 const alertInfo = ref([]);
 const detectionEntities = ref([]);
@@ -793,18 +818,27 @@ onMounted(() => {
         if (section.section_id == sectionId.value) {
           section.slopes.forEach((slope) => {
             if (slope.slope_id == slopeId.value) {
-              g_slope = slope.milepost;
+              slopeInfo.value = slope;
               slopeInfo.value.slope_name =
                 section.section_name + slope.milepost;
-              slopeInfo.value.location = slope.location;
-              slopeInfo.value.slope_type = slope.slope_type;
-              slopeInfo.value.alert_length = slope.alerts.length;
-              slopeInfo.value.description = slope.description;
+
+              // 当前边坡监测点的所有历史模型的时间戳（这里写死了）
+              slopeInfo.value.timestamps = [
+                "2024-07-01",
+                "2024-06-01",
+                "2024-05-01",
+              ];
+              slopeInfo.value.currentTimeStamp = "2024-07-01";
 
               alertInfo.value = slope.alerts;
-              //console.log(alertInfo.value)
 
-              var path = "/" + g_slope + "/survey/image_list.json";
+              // 加载当前边坡监测点的所有实景图片
+              var path =
+                "/" +
+                slopeInfo.value.milepost +
+                "/" +
+                slopeInfo.value.currentTimeStamp +
+                "/survey/image_list.json";
               fetch(path)
                 .then((response) => response.json())
                 .then((data) => {
@@ -934,7 +968,15 @@ const showImages = () => {
       Math.abs(image.gps.lng - currentPos.lng) < 0.0004 &&
       Math.abs(image.gps.lat - currentPos.lat) < 0.0004
     ) {
-      imageUrlsList.push("/" + g_slope + "/survey/" + image.id + ".JPG");
+      imageUrlsList.push(
+        "/" +
+          slopeInfo.value.milepost +
+          "/" +
+          slopeInfo.value.currentTimeStamp +
+          "/survey/" +
+          image.id +
+          ".JPG"
+      );
     }
   });
   viewerApi({
@@ -1089,7 +1131,13 @@ const disasterDetection = (type) => {
     detectionInfo.value.images.forEach((image) => {
       image.prediction = "70%"; // 预测可信度
       detectionInfo.value.imageUrls.push(
-        "/" + g_slope + "/survey/" + image.id + ".JPG"
+        "/" +
+          slopeInfo.value.milepost +
+          "/" +
+          slopeInfo.value.currentTimeStamp +
+          "/survey/" +
+          image.id +
+          ".JPG"
       );
     });
     detectionLoading.value = false;
@@ -1103,7 +1151,15 @@ const handleDetectionConfirm = () => {
     detectionEntities.value.push({
       id: image.id,
       position: image.gps,
-      url: ["/" + g_slope + "/survey/" + image.id + ".JPG"],
+      url: [
+        "/" +
+          slopeInfo.value.milepost +
+          "/" +
+          slopeInfo.value.currentTimeStamp +
+          "/survey/" +
+          image.id +
+          ".JPG",
+      ],
       prediction: image.prediction,
     });
   });
