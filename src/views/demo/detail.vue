@@ -1,10 +1,7 @@
 <template>
   <div>
     <div class="slope-viewer">
-      <vc-config-provider
-        :cesium-path="cesiumPath"
-        :access-token="accesstToken"
-      >
+      <vc-config-provider :cesium-path="cesiumPath" :access-token="accessToken">
         <vc-viewer
           ref="viewerRef"
           :info-box="false"
@@ -25,6 +22,16 @@
             ref="groundTileset"
             :assetId="2712754"
             @ready="onGroundTilesetReady"
+            :show="showModel"
+            :maximumScreenSpaceError="2"
+            :pointCloudShading="{ attenuation: true, maximumAttenuation: 2 }"
+          />
+
+          <!-- 地面模型 -->
+          <vc-primitive-tileset
+            :assetId="2714456"
+            :show="showDetect"
+            @ready="onGroundTilesetReady"
             :maximumScreenSpaceError="2"
             :pointCloudShading="{ attenuation: true, maximumAttenuation: 2 }"
           />
@@ -36,16 +43,31 @@
     <div class="viewer-toolbar">
       <el-space direction="horizontal" :size="16">
         <el-button type="primary" @click="back">返回</el-button>
-        <el-select
-          v-model="currentAlert.timestamp"
-          placeholder="请选择模型日期"
-          style="width: 200px"
-        >
-          <el-option
-            :label="currentAlert.timestamp"
-            :value="currentAlert.timestamp"
+        <!-- <el-select v-model="currentAlert.timestamp" placeholder="请选择模型日期" style="width: 200px">
+          <el-option :label="currentAlert.timestamp" :value="currentAlert.timestamp" />
+        </el-select> -->
+        <div>
+          <span>显示缺陷 </span>
+          <el-switch
+            v-model="showDetect"
+            style="
+
+              --el-switch-on-color: #13ce66;
+              --el-switch-off-color: #ff4949;
+            "
           />
-        </el-select>
+        </div>
+        <div>
+          <span>显示模型 </span>
+          <el-switch
+            v-model="showModel"
+            style="
+
+              --el-switch-on-color: #13ce66;
+              --el-switch-off-color: #ff4949;
+            "
+          />
+        </div>
       </el-space>
     </div>
 
@@ -83,8 +105,8 @@ import { useAppStore } from "@/store";
 import MonitorAPI from "@/api/monitor";
 
 const cesiumPath = import.meta.env.VITE_VUE_CESIUMJS_PATH;
-//const accesstToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2YmI1OTA2ZS05MTZlLTQxY2UtYTVhNS1lNjgxNDI2MzAxM2QiLCJpZCI6NjAyOTcsImlhdCI6MTYyNDk1OTIyMX0.kplgp5oaM5gsGPjBIhqouaylpnlRQa6okGQ80UsA_78'
-const accesstToken =
+//const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2YmI1OTA2ZS05MTZlLTQxY2UtYTVhNS1lNjgxNDI2MzAxM2QiLCJpZCI6NjAyOTcsImlhdCI6MTYyNDk1OTIyMX0.kplgp5oaM5gsGPjBIhqouaylpnlRQa6okGQ80UsA_78'
+const accessToken =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmNzM0NjJhNi0wNDNhLTQ2NWYtYjM1ZC0xOThjMGUxNDdiNjIiLCJpZCI6MjM0NjcyLCJpYXQiOjE3MjM2MTY4NDJ9.q3bfwOGOUoxUrJwFKwaOJsNNQ-JbIPuzAkakY_BbFgY";
 const viewerRef = ref(null);
 var g_Cesium = null;
@@ -120,6 +142,10 @@ const currentAlert = ref({
     status: "未处理",
   },
 });
+
+const showDetect = ref(true);
+const showModel = ref(true);
+
 onMounted(() => {
   //console.log(alertId.value);
   MonitorAPI.getMonitorData()
@@ -200,7 +226,7 @@ const back = () => {
   top: 20px;
   left: 20px;
   padding: 10px;
-  // color: #e2dede;
+  color: #e2dede;
   // background: rgb(0 0 0 / 20%);
   // border-radius: 25px;
 }
