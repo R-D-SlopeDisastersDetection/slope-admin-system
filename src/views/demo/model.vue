@@ -1112,15 +1112,25 @@ const disasterDetection = (type) => {
     });
   }
 
-  // 接口返回结果：假设检测的前3张照片有缺陷
+  // 接口返回数据定义：
   const responseData = {
     // 检测的照片总数
     detectedNum: detectedImages.length,
     // 检测出有缺陷的照片数量
     disasterNum: 3,
     // 返回的检测出的有缺陷的照片信息
-    images: [detectedImages[0], detectedImages[1], detectedImages[2]],
+    images: [],
   };
+
+  // 假设检测的指定id的照片有缺陷
+  const imagesId = ["0a7a3fcd3ef86a362d77c6766ec895662198b742"];
+  detectedImages.forEach((image) => {
+    imagesId.forEach((id) => {
+      if (image.id == id) {
+        responseData.images.push(image);
+      }
+    });
+  });
 
   // 等待2秒，模拟算法处理时间
   setTimeout(() => {
