@@ -209,19 +209,29 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button
-            v-if="!showNewSlopeDialog"
+            v-show="!showNewSlopeDialog"
+            type="primary"
+            @click="showModel"
+            >查看实景模型</el-button
+          >
+          <el-button
+            v-show="!showNewSlopeDialog"
             type="primary"
             @click="changeSlope"
             >变更</el-button
           >
           <el-button
-            v-if="!showNewSlopeDialog"
+            v-show="!showNewSlopeDialog"
             type="danger"
             @click="deleteSlope"
           >
             删除
           </el-button>
-          <el-button v-if="showNewSlopeDialog" type="danger" @click="newSlope">
+          <el-button
+            v-show="showNewSlopeDialog"
+            type="danger"
+            @click="newSlope"
+          >
             新增
           </el-button>
         </div>
@@ -374,6 +384,14 @@ const changeSlope = () => {
   currentSlope.value.Name = currentSlope.value.slope_name; // 更新级联选择器的label
   ElMessage.success("变更成功");
   showSlopeDialog.value = false;
+};
+
+const showModel = () => {
+  appStore.setModelId(
+    currentSlope.value.section_id,
+    currentSlope.value.slope_id
+  );
+  router.replace("/redirect/slope/model");
 };
 
 const onSlopeMarkEvent = ({ type, target }, slope) => {

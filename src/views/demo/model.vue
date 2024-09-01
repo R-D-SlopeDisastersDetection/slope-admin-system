@@ -1117,7 +1117,7 @@ const disasterDetection = (type) => {
     // 检测的照片总数
     detectedNum: detectedImages.length,
     // 检测出有缺陷的照片数量
-    disasterNum: 3,
+    disasterNum: 0,
     // 返回的检测出的有缺陷的照片信息
     images: [],
   };
@@ -1131,6 +1131,11 @@ const disasterDetection = (type) => {
       }
     });
   });
+  // 演示用：填充下数据=-=
+  if (responseData.images.length == 0) {
+    responseData.images.push(detectedImages[0]);
+  }
+  responseData.disasterNum = responseData.images.length;
 
   // 等待2秒，模拟算法处理时间
   setTimeout(() => {
