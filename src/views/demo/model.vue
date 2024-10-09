@@ -348,7 +348,7 @@
           </el-row>
           <el-row style="margin-bottom: 16px">
             <el-col :span="4">
-              <div>现场图片：</div>
+              <div>预警图片：</div>
             </el-col>
             <el-col :span="20">
               <el-image
@@ -985,6 +985,8 @@ const showImages = () => {
 };
 
 const setAlertPolygon = () => {
+  console.log([currentPos.lng, currentPos.lat, currentPos.height + 0.1]);
+
   newAlertArea.value.push([
     currentPos.lng,
     currentPos.lat,
@@ -998,6 +1000,11 @@ const reSetAlertPolygon = () => {
 
 const newMark = () => {
   if (currentAlert.value.disease) {
+    console.log({
+      lng: currentPos.lng,
+      lat: currentPos.lat,
+      height: currentPos.height,
+    });
     currentAlert.value.disease.marks.push({
       lng: currentPos.lng,
       lat: currentPos.lat,

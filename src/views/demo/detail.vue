@@ -20,7 +20,7 @@
           <!-- 地面模型 -->
           <vc-primitive-tileset
             ref="groundTileset"
-            :assetId="2712754"
+            :assetId="currentAlert.disease.asset_id_point_cloud"
             @ready="onGroundTilesetReady"
             :show="showModel"
             :maximumScreenSpaceError="2"
@@ -29,7 +29,7 @@
 
           <!-- 地面模型 -->
           <vc-primitive-tileset
-            :assetId="2714456"
+            :assetId="currentAlert.disease.asset_id_point_cloud_detect"
             :show="showDetect"
             @ready="onGroundTilesetReady"
             :maximumScreenSpaceError="2"
@@ -131,6 +131,8 @@ const currentAlert = ref({
     detection_id: -1,
     flight_id: -1,
     slope_id: -1,
+    asset_id_point_cloud: -1,
+    asset_id_point_cloud_detect: -1,
     discovery_date: "",
     image_url: [],
     disease_type: "crack",
