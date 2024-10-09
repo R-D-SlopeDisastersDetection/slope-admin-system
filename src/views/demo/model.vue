@@ -25,7 +25,7 @@
           <!-- 地面模型 -->
           <vc-primitive-tileset
             ref="groundTileset"
-            :assetId="2670980"
+            :assetId="2763804"
             :show="!modelState"
             :maximumScreenSpaceError="64"
             :pointCloudShading="{ attenuation: true, maximumAttenuation: 4 }"
@@ -344,6 +344,19 @@
                 <el-option label="处理中" value="处理中" />
                 <el-option label="已处理" value="已处理" />
               </el-select>
+            </el-col>
+          </el-row>
+          <el-row
+            style="margin-bottom: 16px"
+            v-if="currentAlert.disease?.analysis_url"
+          >
+            <el-col :span="4">
+              <div>预警数据：</div>
+            </el-col>
+            <el-col :span="20">
+              <el-link :href="currentAlert.disease?.analysis_url" type="primary"
+                >{{ currentAlert.alert_name }}.csv</el-link
+              >
             </el-col>
           </el-row>
           <el-row style="margin-bottom: 16px">
@@ -706,8 +719,9 @@ const slopeId = computed(() => appStore.slopeId);
 
 const cesiumPath = import.meta.env.VITE_VUE_CESIUMJS_PATH;
 //const accesstToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2YmI1OTA2ZS05MTZlLTQxY2UtYTVhNS1lNjgxNDI2MzAxM2QiLCJpZCI6NjAyOTcsImlhdCI6MTYyNDk1OTIyMX0.kplgp5oaM5gsGPjBIhqouaylpnlRQa6okGQ80UsA_78'
+// const accesstToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiZGNiNGNkOC0zZWE1LTQwOGItYmQ3OS01OWMyNzcyYjNkNmUiLCJpZCI6MjI5NTM5LCJpYXQiOjE3MjE0NDI0MDJ9.GJE4ov7XP4jLXGP7oty3NELqaFp7mEbTZzvkgYPkhCc";
 const accesstToken =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiZGNiNGNkOC0zZWE1LTQwOGItYmQ3OS01OWMyNzcyYjNkNmUiLCJpZCI6MjI5NTM5LCJpYXQiOjE3MjE0NDI0MDJ9.GJE4ov7XP4jLXGP7oty3NELqaFp7mEbTZzvkgYPkhCc";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmNzM0NjJhNi0wNDNhLTQ2NWYtYjM1ZC0xOThjMGUxNDdiNjIiLCJpZCI6MjM0NjcyLCJpYXQiOjE3MjM2MTY4NDJ9.q3bfwOGOUoxUrJwFKwaOJsNNQ-JbIPuzAkakY_BbFgY";
 const image = "./images/mark.png";
 const viewerRef = ref(null);
 const distanceDisplayCondition = { near: 0, far: 20000000 };

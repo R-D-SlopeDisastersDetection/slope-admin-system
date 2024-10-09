@@ -304,6 +304,8 @@ export default defineMock([
                     asset_id_point_cloud_detect: 2763516,
                     discovery_date: "2024-7-1",
                     image_url: ["./images/disaster1/Disaster1.png"],
+                    analysis_url:
+                      "./images/disaster1/2024-10-04 grid_analyse_result_1.csv",
                     disease_type: "settle",
                     severity: "middle",
                     area: [
@@ -375,6 +377,8 @@ export default defineMock([
                       "./images/disaster2/Disaster2.png",
                       "./images/disaster2/analysis.png",
                     ],
+                    analysis_url:
+                      "./images/disaster2/2024-10-09 grid_analyse_result_1.csv",
                     disease_type: "settle",
                     severity: "middle",
                     area: [
@@ -444,6 +448,8 @@ export default defineMock([
                       "./images/disaster3/Disaster_3_135_Compared_118.png",
                       "./images/disaster3/Before.JPG",
                     ],
+                    analysis_url:
+                      "./images/disaster3/disaster_3_grid_analyse_result.csv",
                     disease_type: "settle",
                     severity: "middle",
                     area: [
@@ -521,6 +527,8 @@ export default defineMock([
                       "./images/disaster6/Disaster_6_3_135_Compared_118.png",
                       "./images/disaster6/Before.JPG",
                     ],
+                    analysis_url:
+                      "./images/disaster6/disaster_6_3_grid_analyse_result_3.csv",
                     disease_type: "settle",
                     severity: "middle",
                     area: [
